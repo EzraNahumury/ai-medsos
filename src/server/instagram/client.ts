@@ -97,6 +97,19 @@ export async function graphGet<T = unknown>(
   return parseResponse<T>(res);
 }
 
+/**
+ * Follow a fully-qualified Graph API URL. Used for paging.next links.
+ * The URL already carries `access_token`, so no need to attach it again.
+ */
+export async function graphGetUrl<T = unknown>(url: string): Promise<T> {
+  const res = await fetch(url, {
+    method: "GET",
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+  return parseResponse<T>(res);
+}
+
 export async function graphPost<T = unknown>(
   path: string,
   accessToken: string,
@@ -157,6 +170,45 @@ export async function getInstagramMedia(
   return res.data ?? [];
 }
 
+/**
+ * Fetch ALL media for an IG account by following `paging.next` links.
+ * Safety cap is high (10k items) to avoid runaway loops.
+ *
+ * `onPage` lets callers stream progress and abort early by returning false.
+ */
+export async function getAllInstagramMedia(
+  igUserId: string,
+  accessToken: string,
+  opts?: {
+    pageSize?: number;
+    maxItems?: number;
+    onPage?: (batch: IgMedia[], totalSoFar: number) => boolean | void;
+  },
+): Promise<IgMedia[]> {
+  const pageSize = opts?.pageSize ?? 100;
+  const maxItems = opts?.maxItems ?? 10_000;
+  const path = igUserId ? `/${igUserId}/media` : `/me/media`;
+  const collected: IgMedia[] = [];
+
+  let res = await graphGet<PagedResponse<IgMedia>>(path, accessToken, {
+    fields: MEDIA_FIELDS,
+    limit: String(pageSize),
+  });
+
+  while (true) {
+    const batch = res.data ?? [];
+    collected.push(...batch);
+    const cont = opts?.onPage?.(batch, collected.length);
+    if (cont === false) break;
+    if (collected.length >= maxItems) break;
+    const next = res.paging?.next;
+    if (!next) break;
+    res = await graphGetUrl<PagedResponse<IgMedia>>(next);
+  }
+
+  return collected;
+}
+
 export async function getInstagramMediaDetail(
   mediaId: string,
   accessToken: string,
@@ -180,6 +232,38 @@ export async function getMediaComments(
     { fields: COMMENT_FIELDS, limit: "50" },
   );
   return res.data ?? [];
+}
+
+/**
+ * Fetch ALL comments on a media by following pagination.
+ * Note: replies are still bounded by the inline `replies{...}` expansion;
+ * comments with deep reply trees may not be fully captured.
+ */
+export async function getAllMediaComments(
+  mediaId: string,
+  accessToken: string,
+  opts?: { pageSize?: number; maxItems?: number },
+): Promise<IgComment[]> {
+  const pageSize = opts?.pageSize ?? 50;
+  const maxItems = opts?.maxItems ?? 5_000;
+  const collected: IgComment[] = [];
+
+  let res = await graphGet<PagedResponse<IgComment>>(
+    `/${mediaId}/comments`,
+    accessToken,
+    { fields: COMMENT_FIELDS, limit: String(pageSize) },
+  );
+
+  while (true) {
+    const batch = res.data ?? [];
+    collected.push(...batch);
+    if (collected.length >= maxItems) break;
+    const next = res.paging?.next;
+    if (!next) break;
+    res = await graphGetUrl<PagedResponse<IgComment>>(next);
+  }
+
+  return collected;
 }
 
 export async function getCommentDetail(

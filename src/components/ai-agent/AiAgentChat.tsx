@@ -56,10 +56,31 @@ type ConversationDetailResponse = ApiEnvelope<{
 }>;
 
 const starterPrompts = [
-  "Ringkas kondisi akun IG sekarang.",
-  "Konten dan komentar apa yang perlu diprioritaskan?",
-  "Ada masalah sync atau webhook terbaru?",
+  {
+    title: "Ringkas akun",
+    subtitle: "Kondisi semua brand sekarang",
+    prompt: "Ringkas kondisi akun Instagram yang terhubung — jumlah follower, post terbaru, dan engagement rate.",
+  },
+  {
+    title: "Prioritas konten",
+    subtitle: "Yang perlu dijawab dulu",
+    prompt: "Konten dan komentar apa yang perlu diprioritaskan minggu ini?",
+  },
+  {
+    title: "Status sistem",
+    subtitle: "Sync, webhook, error",
+    prompt: "Apakah ada masalah sync atau webhook terbaru? Tampilkan audit log singkat.",
+  },
+  {
+    title: "Insight performa",
+    subtitle: "Post terbaik & terburuk",
+    prompt: "Post mana yang paling viral dan paling sepi? Beri analisis singkat.",
+  },
 ];
+
+// ============================================================================
+// Markdown rendering helpers (preserved)
+// ============================================================================
 
 type MarkdownBlock =
   | { type: "heading"; level: number; text: string }
@@ -89,12 +110,7 @@ function normalizeUrl(value: string): string {
 }
 
 function splitTableRow(line: string): string[] {
-  return line
-    .trim()
-    .replace(/^\|/, "")
-    .replace(/\|$/, "")
-    .split("|")
-    .map((cell) => cell.trim());
+  return line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
 }
 
 function parseMarkdown(content: string): MarkdownBlock[] {
@@ -213,10 +229,7 @@ function renderInline(text: string): ReactNode[] {
       );
     } else if (token.startsWith("`") && token.endsWith("`")) {
       nodes.push(
-        <code
-          key={`${match.index}-code`}
-          className="rounded border border-[color:var(--border)] bg-[color:var(--card)] px-1 py-0.5 text-xs"
-        >
+        <code key={`${match.index}-code`} className="kbd">
           {token.slice(1, -1)}
         </code>,
       );
@@ -230,7 +243,7 @@ function renderInline(text: string): ReactNode[] {
           href={href}
           target="_blank"
           rel="noreferrer"
-          className="text-[color:var(--accent)] underline underline-offset-2"
+          className="text-[color:var(--accent)] underline underline-offset-2 hover:opacity-80"
         >
           {label}
         </a>,
@@ -251,16 +264,8 @@ function extractUrl(value: string): string | null {
 function isNumericColumn(header: string): boolean {
   const clean = stripFormatting(header).toLowerCase();
   return [
-    "#",
-    "id",
-    "likes",
-    "komentar",
-    "total interaksi",
-    "reach",
-    "impressions",
-    "shares",
-    "saves",
-    "views",
+    "#", "id", "likes", "komentar", "total interaksi",
+    "reach", "impressions", "shares", "saves", "views",
   ].some((label) => clean.includes(label));
 }
 
@@ -274,9 +279,9 @@ function formatHistoryDate(value: string | null | undefined): string {
 function AssistantTable({ rows }: { rows: string[][] }) {
   const [header, ...body] = rows;
   return (
-    <div className="my-4 overflow-x-auto rounded-md border border-[color:var(--border)]">
-      <table className="w-full min-w-[720px] border-collapse text-left text-xs">
-        <thead className="bg-[color:var(--card)] text-[color:var(--muted)]">
+    <div className="my-4 overflow-x-auto rounded-lg border border-[color:var(--border)]">
+      <table className="w-full min-w-[640px] border-collapse text-left text-xs">
+        <thead className="bg-[color:var(--bg-elev-2)] text-fg-muted">
           <tr>
             {header.map((cell, index) => (
               <th
@@ -294,7 +299,7 @@ function AssistantTable({ rows }: { rows: string[][] }) {
           {body.map((row, rowIndex) => (
             <tr
               key={`${row.join("-")}-${rowIndex}`}
-              className="border-b border-[color:var(--border)] last:border-b-0"
+              className="border-b border-[color:var(--border-soft)] last:border-b-0 hover:bg-[color:var(--bg-elev-2)]"
             >
               {row.map((cell, cellIndex) => {
                 const headerText = header[cellIndex] ?? "";
@@ -304,7 +309,7 @@ function AssistantTable({ rows }: { rows: string[][] }) {
                   <td
                     key={`${cell}-${cellIndex}`}
                     className={`align-top px-3 py-2 ${
-                      numeric ? "text-right tabular-nums" : "text-left"
+                      numeric ? "text-right tabular-nums mono" : "text-left"
                     }`}
                   >
                     {url && stripFormatting(headerText).toLowerCase().includes("permalink") ? (
@@ -312,7 +317,7 @@ function AssistantTable({ rows }: { rows: string[][] }) {
                         href={url}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex rounded-md border border-[color:var(--border)] px-2 py-1 text-xs text-[color:var(--accent)] hover:bg-[color:var(--border)]/30"
+                        className="inline-flex rounded-md border border-[color:var(--border)] px-2 py-0.5 text-xs text-[color:var(--accent)] hover:bg-[color:var(--bg-elev-3)]"
                       >
                         Open
                       </a>
@@ -368,6 +373,10 @@ function AssistantContent({ content }: { content: string }) {
   );
 }
 
+// ============================================================================
+// Main component
+// ============================================================================
+
 export default function AiAgentChat() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<number | null>(null);
@@ -382,6 +391,7 @@ export default function AiAgentChat() {
     contextGeneratedAt: string;
   } | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -416,6 +426,14 @@ export default function AiAgentChat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, loading]);
 
+  // Auto-resize textarea
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+  }, [input]);
+
   async function refreshConversations() {
     const res = await fetch("/api/ai-agent/conversations", { cache: "no-store" });
     const json = (await res.json()) as ConversationListResponse;
@@ -427,9 +445,7 @@ export default function AiAgentChat() {
     setLoadingConversation(true);
     setError(null);
     try {
-      const res = await fetch(`/api/ai-agent/conversations/${id}`, {
-        cache: "no-store",
-      });
+      const res = await fetch(`/api/ai-agent/conversations/${id}`, { cache: "no-store" });
       const json = (await res.json()) as ConversationDetailResponse;
       if (!res.ok || !json.success || !json.data) {
         setError(json.error?.message ?? "Gagal memuat chat.");
@@ -457,9 +473,7 @@ export default function AiAgentChat() {
   async function deleteConversation(id: number) {
     if (loading) return;
     try {
-      const res = await fetch(`/api/ai-agent/conversations/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`/api/ai-agent/conversations/${id}`, { method: "DELETE" });
       const json = (await res.json()) as ApiEnvelope<{ deleted: boolean }>;
       if (!res.ok || !json.success) {
         setError(json.error?.message ?? "Gagal menghapus chat.");
@@ -543,35 +557,41 @@ export default function AiAgentChat() {
     }
   }
 
-  const activeConversation = conversations.find(
-    (conversation) => conversation.id === activeConversationId,
-  );
+  const activeConversation = conversations.find((c) => c.id === activeConversationId);
   const showEmptyState = messages.length === 0 && !loadingConversation;
 
   return (
-    <div className="flex h-[calc(100vh-7rem)] min-h-[600px] overflow-hidden rounded-lg border border-[color:var(--border)] bg-[color:var(--background)]">
-      <aside className="hidden w-72 shrink-0 border-r border-[color:var(--border)] bg-[color:var(--card)] lg:flex lg:flex-col">
-        <div className="border-b border-[color:var(--border)] p-4">
-          <button type="button" className="btn btn-secondary w-full" onClick={startNewChat}>
-            + Chat Baru
+    <div className="flex h-[calc(100vh-9rem)] min-h-[600px] overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--bg-elev-1)] shadow-[var(--shadow-elev)]">
+      {/* Conversations sidebar */}
+      <aside className="hidden w-72 shrink-0 border-r border-[color:var(--border)] bg-[color:var(--bg)] lg:flex lg:flex-col">
+        <div className="border-b border-[color:var(--border)] p-3">
+          <button
+            type="button"
+            className="btn btn-secondary w-full"
+            onClick={startNewChat}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            New chat
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto p-3">
+        <div className="min-h-0 flex-1 overflow-y-auto p-2">
           {conversations.length === 0 ? (
-            <p className="px-2 py-4 text-sm text-[color:var(--muted)]">
-              Belum ada riwayat chat.
+            <p className="px-3 py-6 text-xs text-muted text-center">
+              No conversations yet.
             </p>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {conversations.map((conversation) => {
                 const active = conversation.id === activeConversationId;
                 return (
                   <div
                     key={conversation.id}
-                    className={`group flex items-center gap-2 rounded-md border px-2 py-2 ${
+                    className={`group flex items-start gap-2 rounded-lg px-2.5 py-2 transition-colors ${
                       active
-                        ? "border-[color:var(--accent)] bg-[color:var(--background)]"
-                        : "border-transparent hover:border-[color:var(--border)] hover:bg-[color:var(--background)]/60"
+                        ? "bg-[color:var(--accent-soft)] border border-[color:var(--border-strong)]"
+                        : "border border-transparent hover:bg-[color:var(--bg-elev-2)]"
                     }`}
                   >
                     <button
@@ -580,19 +600,21 @@ export default function AiAgentChat() {
                       onClick={() => void loadConversation(conversation.id)}
                     >
                       <div className="truncate text-sm font-medium">{conversation.title}</div>
-                      <div className="mt-1 text-xs text-[color:var(--muted)]">
+                      <div className="mt-0.5 text-[10px] text-faint">
                         {formatHistoryDate(conversation.lastMessageAt ?? conversation.updatedAt)}
-                        {conversation.messageCount ? ` · ${conversation.messageCount} pesan` : ""}
+                        {conversation.messageCount ? ` · ${conversation.messageCount} msg` : ""}
                       </div>
                     </button>
                     <button
                       type="button"
-                      className="rounded px-2 py-1 text-xs text-red-300 opacity-70 hover:bg-red-500/10 hover:opacity-100"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity rounded p-1 text-faint hover:text-[color:var(--danger)] hover:bg-[color:var(--danger)]/10"
                       onClick={() => void deleteConversation(conversation.id)}
-                      title="Hapus chat"
-                      aria-label="Hapus chat"
+                      title="Delete chat"
+                      aria-label="Delete chat"
                     >
-                      ×
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
+                        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z" />
+                      </svg>
                     </button>
                   </div>
                 );
@@ -602,25 +624,36 @@ export default function AiAgentChat() {
         </div>
       </aside>
 
+      {/* Chat area */}
       <section className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-[color:var(--border)] px-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-semibold">AI Agent</h1>
-              <span className="text-xs text-[color:var(--muted)]">IG Database Assistant</span>
+        <header className="flex shrink-0 items-center justify-between border-b border-[color:var(--border)] px-5 py-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 shrink-0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                <path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
+                <circle cx="12" cy="12" r="3.5" />
+              </svg>
             </div>
-            {activeConversation && (
-              <div className="max-w-[60vw] truncate text-xs text-[color:var(--muted)]">
-                {activeConversation.title}
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="font-semibold">AI Agent</h1>
+                <span className="badge badge-info badge-dot">Ollama Cloud</span>
               </div>
-            )}
+              <div className="text-xs text-muted truncate">
+                {activeConversation?.title ?? "Instagram database assistant"}
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" className="btn btn-secondary lg:hidden" onClick={startNewChat}>
-              Chat Baru
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm lg:hidden"
+              onClick={startNewChat}
+            >
+              New
             </button>
             {meta && (
-              <div className="hidden text-right text-xs text-[color:var(--muted)] md:block">
+              <div className="hidden xl:flex flex-col items-end text-[10px] text-faint mono">
                 <div>{meta.requestModel}</div>
                 <div>{new Date(meta.contextGeneratedAt).toLocaleString()}</div>
               </div>
@@ -629,37 +662,46 @@ export default function AiAgentChat() {
         </header>
 
         {error && (
-          <div className="border-b border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          <div className="border-b border-[color:var(--danger)]/30 bg-[color:var(--danger)]/10 px-5 py-2.5 text-sm text-[color:var(--danger)] fade-in">
             {error}
           </div>
         )}
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-4">
-          <div className="mx-auto flex max-w-5xl flex-col gap-4">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6">
+          <div className="mx-auto flex max-w-3xl flex-col gap-5">
             {loadingConversation && (
-              <div className="text-sm text-[color:var(--muted)]">Memuat riwayat chat...</div>
+              <div className="flex items-center gap-2 text-sm text-muted">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 spin">
+                  <path d="M21 12a9 9 0 1 1-6.2-8.55" />
+                </svg>
+                Loading chat history…
+              </div>
             )}
 
             {showEmptyState && (
-              <div className="flex min-h-[360px] flex-col items-center justify-center text-center">
-                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[color:var(--accent)] text-2xl text-white">
-                  AI
+              <div className="flex min-h-[480px] flex-col items-center justify-center text-center fade-in">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-xl shadow-indigo-500/30">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7">
+                    <path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
+                    <circle cx="12" cy="12" r="3.5" />
+                  </svg>
                 </div>
-                <h2 className="text-2xl font-semibold">AI Agent</h2>
-                <p className="mt-2 max-w-xl text-sm text-[color:var(--muted)]">
-                  Mulai chat baru atau lanjutkan riwayat dari panel kiri.
-                  Jawaban memakai konteks database Instagram yang tersimpan.
+                <h2 className="text-2xl font-semibold">How can I help you today?</h2>
+                <p className="mt-2 max-w-md text-sm text-soft">
+                  Saya bisa analisis database Instagram kamu — engagement, sentiment komentar,
+                  performa konten, status sync. Mulai dengan salah satu pertanyaan di bawah.
                 </p>
-                <div className="mt-6 flex flex-wrap justify-center gap-2">
-                  {starterPrompts.map((prompt) => (
+                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl w-full">
+                  {starterPrompts.map((p) => (
                     <button
-                      key={prompt}
+                      key={p.title}
                       type="button"
-                      className="btn btn-secondary"
-                      onClick={() => void sendText(prompt)}
+                      className="card card-hover bg-[color:var(--bg-elev-2)] p-4 text-left group"
+                      onClick={() => void sendText(p.prompt)}
                       disabled={loading}
                     >
-                      {prompt}
+                      <div className="text-sm font-medium">{p.title}</div>
+                      <div className="text-xs text-muted mt-0.5">{p.subtitle}</div>
                     </button>
                   ))}
                 </div>
@@ -669,27 +711,60 @@ export default function AiAgentChat() {
             {messages.map((message, index) => (
               <div
                 key={message.id ?? `${message.role}-${index}`}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex gap-3 fade-in ${
+                  message.role === "user" ? "flex-row-reverse" : "flex-row"
+                }`}
               >
                 <div
-                  className={`rounded-lg border px-4 py-3 text-sm leading-6 ${
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                     message.role === "user"
-                      ? "max-w-[82%] whitespace-pre-wrap border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
-                      : "w-full max-w-full border-[color:var(--border)] bg-[color:var(--card)] text-[color:var(--foreground)]"
-                  } ${message.pending ? "opacity-70" : ""}`}
+                      ? "bg-[color:var(--bg-elev-3)] text-soft"
+                      : "bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-md shadow-indigo-500/20"
+                  }`}
+                >
+                  {message.role === "user" ? (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                      <circle cx="12" cy="8" r="3.5" />
+                      <path d="M4 20c1.2-4 4.2-6 8-6s6.8 2 8 6" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                      <path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
+                      <circle cx="12" cy="12" r="3.5" />
+                    </svg>
+                  )}
+                </div>
+                <div
+                  className={`rounded-2xl px-4 py-3 max-w-[85%] ${
+                    message.role === "user"
+                      ? "bg-[color:var(--bg-elev-3)] text-fg border border-[color:var(--border-strong)]"
+                      : "bg-[color:var(--bg-elev-2)] text-fg border border-[color:var(--border)]"
+                  } ${message.pending ? "opacity-60" : ""}`}
                 >
                   {message.role === "assistant" ? (
                     <AssistantContent content={message.content} />
                   ) : (
-                    message.content
+                    <div className="whitespace-pre-wrap text-sm leading-6">{message.content}</div>
                   )}
                 </div>
               </div>
             ))}
+
             {loading && (
-              <div className="flex justify-start">
-                <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--card)] px-4 py-3 text-sm text-[color:var(--muted)]">
-                  Menganalisis database...
+              <div className="flex gap-3 fade-in">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/20">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                    <path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
+                    <circle cx="12" cy="12" r="3.5" />
+                  </svg>
+                </div>
+                <div className="rounded-2xl bg-[color:var(--bg-elev-2)] border border-[color:var(--border)] px-4 py-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--accent)] animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--accent)] animate-pulse [animation-delay:200ms]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--accent)] animate-pulse [animation-delay:400ms]" />
+                    <span className="text-xs text-muted ml-2">Analyzing database…</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -697,23 +772,48 @@ export default function AiAgentChat() {
           </div>
         </div>
 
-        <div className="shrink-0 border-t border-[color:var(--border)] p-4">
-          <form className="mx-auto flex max-w-5xl items-end gap-3" onSubmit={onSubmit}>
-            <textarea
-              className="input min-h-14 resize-none"
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              onKeyDown={onKeyDown}
-              placeholder="Tanya AI Agent..."
-              disabled={loading}
-            />
-            <button
-              type="submit"
-              className="btn btn-primary h-10 shrink-0"
-              disabled={loading || input.trim().length === 0}
-            >
-              {loading ? "Sending..." : "Send"}
-            </button>
+        {/* Input */}
+        <div className="shrink-0 border-t border-[color:var(--border)] px-5 py-4 bg-[color:var(--bg)]">
+          <form className="mx-auto max-w-3xl" onSubmit={onSubmit}>
+            <div className="relative card bg-[color:var(--bg-elev-2)] focus-within:border-[color:var(--accent)] focus-within:shadow-[0_0_0_3px_var(--accent-soft)] transition-shadow">
+              <textarea
+                ref={textareaRef}
+                className="w-full bg-transparent border-0 outline-none resize-none px-4 py-3 pr-14 text-sm placeholder:text-faint"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={onKeyDown}
+                placeholder="Tanya AI Agent tentang Instagram database…"
+                disabled={loading}
+                rows={1}
+              />
+              <button
+                type="submit"
+                className="absolute right-2 bottom-2 w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-white shadow-md shadow-indigo-500/30 transition-all"
+                disabled={loading || input.trim().length === 0}
+                aria-label="Send"
+              >
+                {loading ? (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 spin">
+                    <path d="M21 12a9 9 0 1 1-6.2-8.55" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <path d="M22 2 11 13" />
+                    <path d="M22 2 15 22 11 13 2 9z" />
+                  </svg>
+                )}
+              </button>
+            </div>
+            <div className="flex items-center justify-between mt-2 px-1">
+              <p className="text-[10px] text-faint">
+                <span className="kbd">Enter</span> to send · <span className="kbd">Shift+Enter</span> for newline
+              </p>
+              {meta && (
+                <p className="text-[10px] text-faint mono">
+                  {meta.requestModel}
+                </p>
+              )}
+            </div>
           </form>
         </div>
       </section>

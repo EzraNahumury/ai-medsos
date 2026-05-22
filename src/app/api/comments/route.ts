@@ -11,8 +11,8 @@ export async function GET(req: NextRequest) {
   }
   const brand = req.nextUrl.searchParams.get("brand") ?? undefined;
   const limit = Math.min(
-    Math.max(Number(req.nextUrl.searchParams.get("limit") || 100), 1),
-    500,
+    Math.max(Number(req.nextUrl.searchParams.get("limit") || 1000), 1),
+    5000,
   );
   const rows = await listAllForDashboard(brand || undefined, limit);
   const comments = rows.map((c) => ({

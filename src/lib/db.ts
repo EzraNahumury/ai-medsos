@@ -11,7 +11,10 @@ function buildPool(): Pool {
     connectionLimit: 10,
     waitForConnections: true,
     queueLimit: 0,
-    timezone: "Z",
+    // `local`: treat DATETIME columns as MySQL server local time and
+    // produce JS Date objects in that same local zone — keeps NOW()-based
+    // timestamps consistent with `Date.now()` on the same machine.
+    timezone: "local",
     dateStrings: false,
     supportBigNumbers: true,
     bigNumberStrings: false,

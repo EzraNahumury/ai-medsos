@@ -221,3 +221,16 @@ export async function count(): Promise<number> {
   );
   return row?.c ?? 0;
 }
+
+/** Returns total count per brandName (rows for brands with 0 comments are omitted). */
+export async function countByBrand(): Promise<Record<string, number>> {
+  const rows = await query<{ brand: string; c: number }>(
+    "SELECT s.`brandName` AS brand, COUNT(*) AS c " +
+      "FROM `InstagramComment` c LEFT JOIN `SocialAccount` s ON s.`id` = c.`socialAccountId` " +
+      "WHERE s.`brandName` IS NOT NULL " +
+      "GROUP BY s.`brandName`",
+  );
+  const out: Record<string, number> = {};
+  for (const r of rows) out[r.brand] = r.c;
+  return out;
+}

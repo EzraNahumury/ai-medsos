@@ -6,18 +6,23 @@ import * as metricRepo from "@/server/repo/media-metric";
 import * as accountRepo from "@/server/repo/social-account";
 import { createJob, updateJob } from "@/server/repo/sync-job";
 import {
+  getAllInstagramMedia,
+  getAllMediaComments,
   getCommentDetail,
-  getInstagramMedia,
   getInstagramProfile,
-  getMediaComments,
   getMediaInsights,
   GraphApiError,
   parseInsightResponse,
 } from "./client";
 import type { IgComment } from "./types";
 
-const MEDIA_BATCH_LIMIT = 50;
-const SYNC_TARGET_LIMIT = 50;
+// Pagination/page-size for Graph API requests.
+const MEDIA_PAGE_SIZE = 100;
+// Safety cap for total items synced per run — prevents runaway loops on
+// accounts with tens of thousands of items.
+const MEDIA_MAX_ITEMS = 5_000;
+const INSIGHT_MEDIA_LIMIT = 1_000; // metric snapshots per run
+const COMMENT_MEDIA_LIMIT = 1_000; // media to walk for comments per run
 
 type SyncOutcome = {
   ok: boolean;
@@ -94,11 +99,10 @@ export async function syncMedia(accountId: number): Promise<SyncOutcome> {
   const warnings: string[] = [];
   try {
     const token = decryptSecret(account.encryptedPageAccessToken);
-    const list = await getInstagramMedia(
-      account.igUserId,
-      token,
-      MEDIA_BATCH_LIMIT,
-    );
+    const list = await getAllInstagramMedia(account.igUserId, token, {
+      pageSize: MEDIA_PAGE_SIZE,
+      maxItems: MEDIA_MAX_ITEMS,
+    });
     let processed = 0;
     for (const m of list) {
       try {
@@ -166,7 +170,7 @@ export async function syncInsights(accountId: number): Promise<SyncOutcome> {
     const token = decryptSecret(account.encryptedPageAccessToken);
     const recent = await mediaRepo.listBySocialAccount(
       account.id,
-      SYNC_TARGET_LIMIT,
+      INSIGHT_MEDIA_LIMIT,
     );
     let processed = 0;
     for (const media of recent) {
@@ -248,12 +252,12 @@ export async function syncComments(accountId: number): Promise<SyncOutcome> {
     const token = decryptSecret(account.encryptedPageAccessToken);
     const recent = await mediaRepo.listBySocialAccount(
       account.id,
-      SYNC_TARGET_LIMIT,
+      COMMENT_MEDIA_LIMIT,
     );
     let processed = 0;
     for (const media of recent) {
       try {
-        const list = await getMediaComments(media.igMediaId, token);
+        const list = await getAllMediaComments(media.igMediaId, token);
         for (const c of list) {
           await upsertCommentTree(account.id, media.id, c);
           processed++;

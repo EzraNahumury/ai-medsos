@@ -14,8 +14,10 @@ export function relativeTime(d: Date | string | null | undefined): string {
   const dt = typeof d === "string" ? new Date(d) : d;
   if (Number.isNaN(dt.getTime())) return "—";
   const diff = Date.now() - dt.getTime();
-  const sec = Math.floor(diff / 1000);
-  if (sec < 0) return "in the future";
+  const sec = Math.round(diff / 1000);
+  // Treat any "in the future" within 10 minutes as just-now (clock skew),
+  // and anything beyond that as "just now" too — we never want to show "-N".
+  if (sec < 5) return "just now";
   if (sec < 60) return `${sec}s ago`;
   const min = Math.floor(sec / 60);
   if (min < 60) return `${min}m ago`;

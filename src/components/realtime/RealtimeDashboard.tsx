@@ -2,6 +2,60 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import EmptyState from "@/components/ui/EmptyState";
+
+const TH = "text-left px-4 py-3 text-[10px] font-medium uppercase tracking-widest text-[color:var(--fg-muted)]";
+const THR = "text-right px-4 py-3 text-[10px] font-medium uppercase tracking-widest text-[color:var(--fg-muted)]";
+const TD = "px-4 py-3 whitespace-nowrap";
+const TDR = "px-4 py-3 whitespace-nowrap text-right";
+const TRow = "border-t border-[color:var(--border-soft)] hover:bg-[color:var(--bg-elev-2)] transition-colors";
+
+const IconAcct = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-6 h-6">
+    <circle cx="12" cy="8" r="3.5" />
+    <path d="M4 20c1.2-4 4.2-6 8-6s6.8 2 8 6" />
+  </svg>
+);
+const IconWebhook = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-6 h-6">
+    <circle cx="6" cy="18" r="3" />
+    <path d="M9.5 16 14 8" />
+    <circle cx="16" cy="6" r="3" />
+    <path d="M18 8.5 13 17" />
+    <circle cx="18" cy="18" r="3" />
+    <path d="M15 18H8" />
+  </svg>
+);
+const IconJobs = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-6 h-6">
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+  </svg>
+);
+const IconChat = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-6 h-6">
+    <path d="M21 12a8.5 8.5 0 0 1-12.4 7.5L3 21l1.5-5.6A8.5 8.5 0 1 1 21 12z" />
+  </svg>
+);
+const IconMedia = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-6 h-6">
+    <rect x="3" y="3" width="18" height="18" rx="3" />
+    <circle cx="9" cy="9" r="1.5" />
+    <path d="m21 15-5-5L5 21" />
+  </svg>
+);
+const IconChart = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-6 h-6">
+    <path d="M3 3v18h18" />
+    <path d="M7 14l4-4 4 4 6-6" />
+  </svg>
+);
+const IconAudit = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-6 h-6">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+  </svg>
+);
 
 type RealtimeData = {
   connectedAccounts: Array<{
@@ -97,7 +151,7 @@ type RealtimeData = {
   serverTime: string;
 };
 
-function fmt(d: string | null | undefined): string {
+function fmtTime(d: string | null | undefined): string {
   if (!d) return "—";
   const t = new Date(d);
   if (Number.isNaN(t.getTime())) return "—";
@@ -109,25 +163,35 @@ function relTime(d: string | null | undefined): string {
   const t = new Date(d).getTime();
   if (Number.isNaN(t)) return "—";
   const diff = Date.now() - t;
-  const sec = Math.floor(diff / 1000);
+  const sec = Math.round(diff / 1000);
+  if (sec < 5) return "just now";
   if (sec < 60) return `${sec}s ago`;
   if (sec < 3600) return `${Math.floor(sec / 60)}m ago`;
   if (sec < 86400) return `${Math.floor(sec / 3600)}h ago`;
   return `${Math.floor(sec / 86400)}d ago`;
 }
 
+function brandChipClass(brand: string | null | undefined): string {
+  switch (brand) {
+    case "Ayres": return "brand-chip brand-chip-ayres";
+    case "Ava": return "brand-chip brand-chip-ava";
+    case "Saifenu": return "brand-chip brand-chip-saifenu";
+    default: return "brand-chip";
+  }
+}
+
 function statusBadge(status: string) {
   const map: Record<string, string> = {
-    OK: "badge badge-ok",
-    DONE: "badge badge-ok",
-    ACTIVE: "badge badge-ok",
-    PROCESSING: "badge badge-info",
-    RUNNING: "badge badge-info",
-    PENDING: "badge badge-warn",
-    WARN: "badge badge-warn",
-    UNVERIFIED: "badge badge-warn",
-    ERROR: "badge badge-err",
-    EXPIRED: "badge badge-err",
+    OK: "badge badge-ok badge-dot",
+    DONE: "badge badge-ok badge-dot",
+    ACTIVE: "badge badge-ok badge-dot",
+    PROCESSING: "badge badge-info badge-dot",
+    RUNNING: "badge badge-info badge-dot",
+    PENDING: "badge badge-warn badge-dot",
+    WARN: "badge badge-warn badge-dot",
+    UNVERIFIED: "badge badge-warn badge-dot",
+    ERROR: "badge badge-err badge-dot",
+    EXPIRED: "badge badge-err badge-dot",
   };
   return map[status] ?? "badge badge-info";
 }
@@ -155,14 +219,10 @@ export default function RealtimeDashboard() {
   }, []);
 
   useEffect(() => {
-    const initialLoad = window.setTimeout(() => {
-      void load();
-    }, 0);
-    const interval = window.setInterval(() => {
-      void load();
-    }, 5000);
+    const initial = window.setTimeout(() => { void load(); }, 0);
+    const interval = window.setInterval(() => { void load(); }, 5000);
     return () => {
-      window.clearTimeout(initialLoad);
+      window.clearTimeout(initial);
       window.clearInterval(interval);
     };
   }, [load]);
@@ -198,147 +258,195 @@ export default function RealtimeDashboard() {
 
   if (error) {
     return (
-      <div className="card p-4 border-red-500/40 bg-red-500/10 text-red-300">
+      <div className="card p-4 border-[color:var(--danger)]/40 bg-[color:var(--danger)]/10 text-[color:var(--danger)]">
         {error}
       </div>
     );
   }
   if (!data) {
-    return <div className="card p-4 text-[color:var(--muted)]">Loading…</div>;
+    return (
+      <div className="card p-8 text-center">
+        <div className="flex items-center justify-center gap-2 text-muted">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 spin">
+            <path d="M21 12a9 9 0 1 1-6.2-8.55" />
+          </svg>
+          Loading realtime data…
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Realtime</h1>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-[color:var(--muted)]">
-            polled every 5s · server {fmt(data.serverTime)}
-          </span>
-          <button onClick={onProcess} className="btn btn-primary" disabled={processing}>
-            {processing ? "Processing…" : "Process Webhook Events"}
-          </button>
+      {/* Header */}
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="live-dot" />
+            <span className="section-title !mb-0">Live</span>
+          </div>
+          <h1 className="text-3xl font-semibold tracking-tight">Realtime monitor</h1>
+          <p className="text-soft mt-1.5">
+            Auto-refreshing every 5 seconds · Server time {fmtTime(data.serverTime)}
+          </p>
         </div>
+        <button onClick={onProcess} className="btn btn-primary" disabled={processing}>
+          {processing ? (
+            <>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5 spin">
+                <path d="M21 12a9 9 0 1 1-6.2-8.55" />
+              </svg>
+              Processing…
+            </>
+          ) : (
+            <>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                <path d="m13 2-3 14h7l-3 6 9-11h-7l3-9z" fill="currentColor" />
+              </svg>
+              Process webhook events
+            </>
+          )}
+        </button>
       </div>
-      {processMsg && <p className="text-xs text-[color:var(--muted)]">{processMsg}</p>}
+      {processMsg && (
+        <div className="card p-3 text-xs text-soft fade-in">{processMsg}</div>
+      )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="card p-4">
-          <div className="text-xs text-[color:var(--muted)]">Connected Accounts</div>
-          <div className="text-2xl font-semibold">{data.counts.connectedAccounts}</div>
-        </div>
-        <div className="card p-4">
-          <div className="text-xs text-[color:var(--muted)]">Total Media</div>
-          <div className="text-2xl font-semibold">{data.counts.totalMedia}</div>
-        </div>
-        <div className="card p-4">
-          <div className="text-xs text-[color:var(--muted)]">Total Comments</div>
-          <div className="text-2xl font-semibold">{data.counts.totalComments}</div>
-        </div>
-        <div className="card p-4">
-          <div className="text-xs text-[color:var(--muted)]">Pending Webhook</div>
-          <div className="text-2xl font-semibold">{data.counts.pendingWebhookEvents}</div>
-        </div>
+      {/* Counters */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Counter label="Accounts" value={data.counts.connectedAccounts} />
+        <Counter label="Media" value={data.counts.totalMedia} />
+        <Counter label="Comments" value={data.counts.totalComments} />
+        <Counter
+          label="Pending events"
+          value={data.counts.pendingWebhookEvents}
+          tone={data.counts.pendingWebhookEvents > 0 ? "warning" : "default"}
+        />
       </div>
 
-      <div className="card p-4">
-        <h2 className="font-semibold mb-3">Connected IG Accounts</h2>
+      {/* Connected accounts table */}
+      <div className="card p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="section-title">Accounts</div>
+            <h2 className="font-semibold">Connected & sync status</h2>
+          </div>
+        </div>
         {data.connectedAccounts.length === 0 ? (
-          <p className="text-sm text-[color:var(--muted)]">No accounts connected.</p>
+          <EmptyState icon={IconAcct} title="No accounts connected" />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-xs text-[color:var(--muted)]">
-                <tr className="border-b border-[color:var(--border)]">
-                  <th className="text-left py-2 pr-4">Brand</th>
-                  <th className="text-left py-2 pr-4">User</th>
-                  <th className="text-left py-2 pr-4">Token</th>
-                  <th className="text-left py-2 pr-4">Profile</th>
-                  <th className="text-left py-2 pr-4">Media</th>
-                  <th className="text-left py-2 pr-4">Insights</th>
-                  <th className="text-left py-2 pr-4">Comments</th>
-                  <th className="text-left py-2 pr-4">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.connectedAccounts.map((a) => (
-                  <tr key={a.id} className="border-b border-[color:var(--border)]">
-                    <td className="py-2 pr-4">
-                      <Link href={`/dashboard/accounts/${a.id}`} className="hover:underline">
-                        {a.brandName}
-                      </Link>
-                    </td>
-                    <td className="py-2 pr-4">{a.username ? `@${a.username}` : a.igUserId}</td>
-                    <td className="py-2 pr-4"><span className={statusBadge(a.tokenStatus)}>{a.tokenStatus}</span></td>
-                    <td className="py-2 pr-4 text-xs">{relTime(a.lastProfileSyncAt)}</td>
-                    <td className="py-2 pr-4 text-xs">{relTime(a.lastMediaSyncAt)}</td>
-                    <td className="py-2 pr-4 text-xs">{relTime(a.lastInsightSyncAt)}</td>
-                    <td className="py-2 pr-4 text-xs">{relTime(a.lastCommentSyncAt)}</td>
-                    <td className="py-2 pr-4">
-                      <button
-                        onClick={() => onSyncAll(a.id)}
-                        className="btn btn-secondary"
-                        disabled={syncing !== null}
-                      >
-                        {syncing === a.id ? "Syncing…" : "Sync All"}
-                      </button>
-                    </td>
+          <div className="overflow-x-auto -mx-5">
+            <div className="min-w-full px-5">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-[color:var(--bg-elev-2)]">
+                    <th className={TH}>Brand</th>
+                    <th className={TH}>User</th>
+                    <th className={TH}>Token</th>
+                    <th className={TH}>Profile</th>
+                    <th className={TH}>Media</th>
+                    <th className={TH}>Insights</th>
+                    <th className={TH}>Comments</th>
+                    <th className={THR}>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.connectedAccounts.map((a) => (
+                    <tr key={a.id} className={TRow}>
+                      <td className={TD}>
+                        <Link href={`/dashboard/accounts/${a.id}`} className="hover:opacity-80">
+                          <span className={brandChipClass(a.brandName)}>{a.brandName}</span>
+                        </Link>
+                      </td>
+                      <td className={`${TD} text-[color:var(--fg-soft)]`}>
+                        {a.username ? `@${a.username}` : <span className="mono text-xs">{a.igUserId}</span>}
+                      </td>
+                      <td className={TD}><span className={statusBadge(a.tokenStatus)}>{a.tokenStatus}</span></td>
+                      <td className={`${TD} text-[color:var(--fg-muted)] text-xs`}>{relTime(a.lastProfileSyncAt)}</td>
+                      <td className={`${TD} text-[color:var(--fg-muted)] text-xs`}>{relTime(a.lastMediaSyncAt)}</td>
+                      <td className={`${TD} text-[color:var(--fg-muted)] text-xs`}>{relTime(a.lastInsightSyncAt)}</td>
+                      <td className={`${TD} text-[color:var(--fg-muted)] text-xs`}>{relTime(a.lastCommentSyncAt)}</td>
+                      <td className={TDR}>
+                        <button
+                          onClick={() => onSyncAll(a.id)}
+                          className="btn btn-secondary btn-sm"
+                          disabled={syncing !== null}
+                        >
+                          {syncing === a.id ? (
+                            <>
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3 h-3 spin">
+                                <path d="M21 12a9 9 0 1 1-6.2-8.55" />
+                              </svg>
+                              Syncing
+                            </>
+                          ) : (
+                            "Sync All"
+                          )}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
 
+      {/* Activity columns */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="card p-4">
-          <h2 className="font-semibold mb-3">Latest Webhook Events</h2>
+        <div className="card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="section-title">Webhook</div>
+              <h2 className="font-semibold">Latest events</h2>
+            </div>
+          </div>
           {data.latestWebhookEvents.length === 0 ? (
-            <p className="text-sm text-[color:var(--muted)]">None.</p>
+            <EmptyState icon={IconWebhook} title="No events received" />
           ) : (
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2">
               {data.latestWebhookEvents.map((e) => (
-                <li key={e.id} className="border-b border-[color:var(--border)] pb-2">
-                  <div className="flex justify-between text-xs">
-                    <div className="flex gap-2 items-center">
-                      <span className={statusBadge(e.processingStatus)}>{e.processingStatus}</span>
-                      <span className="text-[color:var(--muted)]">
-                        {e.objectType ?? "?"} · {e.fieldName ?? "?"}
-                      </span>
-                    </div>
-                    <span className="text-[color:var(--muted)]">{relTime(e.receivedAt)}</span>
+                <li key={e.id} className="flex items-start gap-2 py-2 border-b border-[color:var(--border-soft)] last:border-0">
+                  <span className={statusBadge(e.processingStatus)}>{e.processingStatus}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium">{e.fieldName ?? "?"}</div>
+                    <div className="text-[10px] text-faint">{e.objectType ?? "—"}</div>
+                    {e.errorMessage && (
+                      <div className="text-[10px] text-[color:var(--danger)] mt-1">{e.errorMessage}</div>
+                    )}
                   </div>
-                  {e.errorMessage && (
-                    <div className="text-xs text-red-400 mt-1">{e.errorMessage}</div>
-                  )}
+                  <span className="text-[10px] text-faint shrink-0">{relTime(e.receivedAt)}</span>
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        <div className="card p-4">
-          <h2 className="font-semibold mb-3">Latest Sync Jobs</h2>
+        <div className="card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="section-title">Jobs</div>
+              <h2 className="font-semibold">Latest sync jobs</h2>
+            </div>
+          </div>
           {data.latestSyncJobs.length === 0 ? (
-            <p className="text-sm text-[color:var(--muted)]">None.</p>
+            <EmptyState icon={IconJobs} title="No jobs yet" />
           ) : (
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2">
               {data.latestSyncJobs.map((j) => (
-                <li key={j.id} className="border-b border-[color:var(--border)] pb-2">
-                  <div className="flex justify-between text-xs">
-                    <div className="flex gap-2 items-center">
-                      <span className={statusBadge(j.status)}>{j.status}</span>
-                      <span className="text-[color:var(--muted)]">{j.jobType}</span>
-                      {j.socialAccountId && (
-                        <span className="text-[color:var(--muted)]">acct #{j.socialAccountId}</span>
-                      )}
-                    </div>
-                    <span className="text-[color:var(--muted)]">{relTime(j.createdAt)}</span>
+                <li key={j.id} className="flex items-start gap-2 py-2 border-b border-[color:var(--border-soft)] last:border-0">
+                  <span className={statusBadge(j.status)}>{j.status}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium mono">{j.jobType}</div>
+                    {j.socialAccountId && (
+                      <div className="text-[10px] text-faint">acct #{j.socialAccountId}</div>
+                    )}
+                    {j.errorMessage && (
+                      <div className="text-[10px] text-[color:var(--danger)] mt-1">{j.errorMessage}</div>
+                    )}
                   </div>
-                  {j.errorMessage && (
-                    <div className="text-xs text-red-400 mt-1">{j.errorMessage}</div>
-                  )}
+                  <span className="text-[10px] text-faint shrink-0">{relTime(j.createdAt)}</span>
                 </li>
               ))}
             </ul>
@@ -346,53 +454,83 @@ export default function RealtimeDashboard() {
         </div>
       </div>
 
+      {/* Activity columns 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="card p-4">
-          <h2 className="font-semibold mb-3">Latest Comments</h2>
+        <div className="card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="section-title">Comments</div>
+              <h2 className="font-semibold">Latest comments</h2>
+            </div>
+            <Link href="/dashboard/comments" className="text-xs text-soft hover:text-fg">All →</Link>
+          </div>
           {data.latestComments.length === 0 ? (
-            <p className="text-sm text-[color:var(--muted)]">None.</p>
+            <EmptyState icon={IconChat} title="No comments yet" />
           ) : (
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-3">
               {data.latestComments.map((c) => (
-                <li key={c.id} className="border-b border-[color:var(--border)] pb-2">
-                  <div className="flex justify-between text-xs text-[color:var(--muted)]">
-                    <span>
-                      [{c.socialAccount?.brandName ?? "?"}] @{c.username ?? "anon"}
-                    </span>
-                    <span>{relTime(c.timestamp)}</span>
+                <li key={c.id} className="flex gap-2.5 pb-3 border-b border-[color:var(--border-soft)] last:border-0">
+                  <div className="w-7 h-7 rounded-full bg-[color:var(--bg-elev-3)] flex items-center justify-center text-[10px] font-medium shrink-0">
+                    {c.username?.[0]?.toUpperCase() ?? "?"}
                   </div>
-                  <div className="text-sm">{c.text ?? "—"}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap text-xs">
+                      {c.socialAccount?.brandName && (
+                        <span className={brandChipClass(c.socialAccount.brandName)}>{c.socialAccount.brandName}</span>
+                      )}
+                      <span className="font-medium">@{c.username ?? "anon"}</span>
+                      <span className="text-[10px] text-faint">{relTime(c.timestamp)}</span>
+                    </div>
+                    <div className="text-xs text-soft mt-0.5 line-clamp-2">{c.text ?? "—"}</div>
+                  </div>
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        <div className="card p-4">
-          <h2 className="font-semibold mb-3">Latest Media</h2>
+        <div className="card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="section-title">Media</div>
+              <h2 className="font-semibold">Latest posts</h2>
+            </div>
+            <Link href="/dashboard/content" className="text-xs text-soft hover:text-fg">All →</Link>
+          </div>
           {data.latestMedia.length === 0 ? (
-            <p className="text-sm text-[color:var(--muted)]">None.</p>
+            <EmptyState icon={IconMedia} title="No media yet" />
           ) : (
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-3">
               {data.latestMedia.map((m) => (
-                <li key={m.id} className="border-b border-[color:var(--border)] pb-2">
-                  <div className="flex justify-between text-xs text-[color:var(--muted)]">
-                    <span>
-                      [{m.socialAccount?.brandName ?? "?"}] {m.mediaType ?? "?"} ·{" "}
-                      @{m.socialAccount?.username ?? "?"}
-                    </span>
-                    <span>{relTime(m.timestamp)}</span>
+                <li key={m.id} className="flex gap-3 pb-3 border-b border-[color:var(--border-soft)] last:border-0">
+                  <div className="w-12 h-12 rounded-md bg-[color:var(--bg-elev-3)] shrink-0 overflow-hidden flex items-center justify-center">
+                    {m.thumbnailUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={m.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-faint text-[10px]">{m.mediaType?.slice(0, 1) ?? "?"}</span>
+                    )}
                   </div>
-                  <a
-                    href={m.permalink ?? "#"}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:underline"
-                  >
-                    {m.caption?.slice(0, 100) ?? "(no caption)"}
-                  </a>
-                  <div className="text-xs text-[color:var(--muted)]">
-                    ❤ {m.likeCount ?? "—"} · 💬 {m.commentsCount ?? "—"}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap text-xs">
+                      {m.socialAccount?.brandName && (
+                        <span className={brandChipClass(m.socialAccount.brandName)}>{m.socialAccount.brandName}</span>
+                      )}
+                      <span className="text-[10px] text-faint uppercase tracking-wider">{m.mediaType}</span>
+                    </div>
+                    <a
+                      href={m.permalink ?? "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block text-xs text-soft hover:text-fg mt-0.5 line-clamp-2"
+                    >
+                      {m.caption?.slice(0, 100) ?? "(no caption)"}
+                    </a>
+                    <div className="text-[10px] text-faint mt-1 mono flex items-center gap-3">
+                      <span>♥ {m.likeCount ?? 0}</span>
+                      <span>💬 {m.commentsCount ?? 0}</span>
+                      <span>{relTime(m.timestamp)}</span>
+                    </div>
                   </div>
                 </li>
               ))}
@@ -401,73 +539,108 @@ export default function RealtimeDashboard() {
         </div>
       </div>
 
-      <div className="card p-4">
-        <h2 className="font-semibold mb-3">Latest Metric Snapshots</h2>
+      {/* Metrics table */}
+      <div className="card p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="section-title">Insights</div>
+            <h2 className="font-semibold">Latest metric snapshots</h2>
+          </div>
+        </div>
         {data.latestMetricSnapshots.length === 0 ? (
-          <p className="text-sm text-[color:var(--muted)]">No snapshots yet.</p>
+          <EmptyState icon={IconChart} title="No snapshots" />
         ) : (
-          <div className="overflow-x-auto text-sm">
-            <table className="w-full">
-              <thead className="text-xs text-[color:var(--muted)]">
-                <tr className="border-b border-[color:var(--border)]">
-                  <th className="text-left py-2 pr-4">When</th>
-                  <th className="text-left py-2 pr-4">Media</th>
-                  <th className="text-right py-2 pr-4">Reach</th>
-                  <th className="text-right py-2 pr-4">Imp</th>
-                  <th className="text-right py-2 pr-4">Likes</th>
-                  <th className="text-right py-2 pr-4">Comm</th>
-                  <th className="text-right py-2 pr-4">Shares</th>
-                  <th className="text-right py-2 pr-4">Saves</th>
-                  <th className="text-right py-2 pr-4">Views</th>
-                  <th className="text-right py-2 pr-4">ER%</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.latestMetricSnapshots.map((s) => (
-                  <tr key={s.id} className="border-b border-[color:var(--border)]">
-                    <td className="py-2 pr-4 text-xs">{relTime(s.collectedAt)}</td>
-                    <td className="py-2 pr-4 text-xs">#{s.instagramMediaId}</td>
-                    <td className="py-2 pr-4 text-right">{s.reach ?? "—"}</td>
-                    <td className="py-2 pr-4 text-right">{s.impressions ?? "—"}</td>
-                    <td className="py-2 pr-4 text-right">{s.likes ?? "—"}</td>
-                    <td className="py-2 pr-4 text-right">{s.comments ?? "—"}</td>
-                    <td className="py-2 pr-4 text-right">{s.shares ?? "—"}</td>
-                    <td className="py-2 pr-4 text-right">{s.saves ?? "—"}</td>
-                    <td className="py-2 pr-4 text-right">{s.views ?? s.plays ?? "—"}</td>
-                    <td className="py-2 pr-4 text-right">
-                      {s.engagementRate !== null ? s.engagementRate.toFixed(2) : "—"}
-                    </td>
+          <div className="overflow-x-auto -mx-5">
+            <div className="min-w-full px-5">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-[color:var(--bg-elev-2)]">
+                    <th className={TH}>When</th>
+                    <th className={TH}>Media</th>
+                    <th className={THR}>Reach</th>
+                    <th className={THR}>Imp</th>
+                    <th className={THR}>Likes</th>
+                    <th className={THR}>Comm</th>
+                    <th className={THR}>Shares</th>
+                    <th className={THR}>Saves</th>
+                    <th className={THR}>Views</th>
+                    <th className={THR}>ER%</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.latestMetricSnapshots.map((s) => (
+                    <tr key={s.id} className={TRow}>
+                      <td className={`${TD} text-[color:var(--fg-muted)] text-xs`}>{relTime(s.collectedAt)}</td>
+                      <td className={`${TD} mono text-xs`}>#{s.instagramMediaId}</td>
+                      <td className={`${TDR} mono`}>{s.reach?.toLocaleString() ?? "—"}</td>
+                      <td className={`${TDR} mono`}>{s.impressions?.toLocaleString() ?? "—"}</td>
+                      <td className={`${TDR} mono`}>{s.likes?.toLocaleString() ?? "—"}</td>
+                      <td className={`${TDR} mono`}>{s.comments?.toLocaleString() ?? "—"}</td>
+                      <td className={`${TDR} mono`}>{s.shares?.toLocaleString() ?? "—"}</td>
+                      <td className={`${TDR} mono`}>{s.saves?.toLocaleString() ?? "—"}</td>
+                      <td className={`${TDR} mono`}>{(s.views ?? s.plays)?.toLocaleString() ?? "—"}</td>
+                      <td className={`${TDR} mono text-[color:var(--accent)] font-medium`}>
+                        {s.engagementRate != null ? s.engagementRate.toFixed(2) : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
 
-      <div className="card p-4">
-        <h2 className="font-semibold mb-3">Latest Audit Logs</h2>
+      {/* Audit log */}
+      <div className="card p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="section-title">Trail</div>
+            <h2 className="font-semibold">Audit log</h2>
+          </div>
+        </div>
         {data.latestAuditLogs.length === 0 ? (
-          <p className="text-sm text-[color:var(--muted)]">None.</p>
+          <EmptyState icon={IconAudit} title="No activity" />
         ) : (
-          <ul className="space-y-1 text-xs">
+          <ul className="divide-y divide-[color:var(--border-soft)] -mx-2">
             {data.latestAuditLogs.map((l) => (
-              <li key={l.id} className="flex justify-between gap-2">
-                <div className="flex gap-2 items-center">
-                  <span className={statusBadge(l.status)}>{l.status}</span>
-                  <span className="text-[color:var(--muted)]">{l.actor}</span>
-                  <span>{l.action}</span>
-                  <span className="text-[color:var(--muted)]">
-                    {l.entityType}{l.entityId ? `#${l.entityId}` : ""}
-                  </span>
-                  {l.message && <span className="text-[color:var(--muted)]">— {l.message}</span>}
-                </div>
-                <span className="text-[color:var(--muted)] shrink-0">{relTime(l.createdAt)}</span>
+              <li
+                key={l.id}
+                className="flex items-center gap-3 px-2 py-2.5 text-xs hover:bg-[color:var(--bg-elev-2)] rounded transition-colors"
+              >
+                <span className={`${statusBadge(l.status)} shrink-0`}>{l.status}</span>
+                <span className="mono text-[color:var(--fg-soft)] shrink-0">{l.actor}</span>
+                <span className="text-[color:var(--fg)] shrink-0 font-medium">{l.action}</span>
+                <span className="text-[color:var(--fg-faint)] text-[10px] mono shrink-0">
+                  {l.entityType}{l.entityId ? `#${l.entityId}` : ""}
+                </span>
+                {l.message && (
+                  <span className="text-[color:var(--fg-muted)] truncate flex-1">— {l.message}</span>
+                )}
+                <span className="text-[color:var(--fg-faint)] text-[10px] shrink-0 ml-auto whitespace-nowrap">{relTime(l.createdAt)}</span>
               </li>
             ))}
           </ul>
         )}
       </div>
+    </div>
+  );
+}
+
+function Counter({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: number;
+  tone?: "default" | "warning";
+}) {
+  const accent = tone === "warning" && value > 0 ? "text-[color:var(--warning)]" : "";
+  return (
+    <div className="card p-4">
+      <div className="text-[10px] text-faint uppercase tracking-widest">{label}</div>
+      <div className={`text-3xl font-semibold mono mt-1 ${accent}`}>{value.toLocaleString()}</div>
     </div>
   );
 }
