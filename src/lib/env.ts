@@ -3,6 +3,9 @@ import { z } from "zod";
 const truthy = (v: unknown) =>
   typeof v === "string" && ["1", "true", "yes", "on"].includes(v.toLowerCase());
 
+const emptyToUndefined = (v: unknown) =>
+  typeof v === "string" && v.trim() === "" ? undefined : v;
+
 const schema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
@@ -31,8 +34,17 @@ const schema = z.object({
     .string()
     .min(1, "TOKEN_ENCRYPTION_KEY is required"),
 
-  OLLAMA_BASE_URL: z.string().url().default("http://localhost:11434"),
-  OLLAMA_MODEL: z.string().default("llama3.1"),
+  OLLAMA_BASE_URL: z.preprocess(
+    emptyToUndefined,
+    z.string().url().default("http://localhost:11434"),
+  ),
+  OLLAMA_HOST: z.preprocess(
+    emptyToUndefined,
+    z.string().url().default("https://ollama.com"),
+  ),
+  OLLAMA_KEY: z.string().default(""),
+  OLLAMA_API_KEY: z.string().default(""),
+  OLLAMA_MODEL: z.string().default("gpt-oss:120b-cloud"),
 
   DEV_ALLOW_MANUAL_TOKEN_IMPORT: z
     .string()
@@ -62,6 +74,16 @@ export function getEnv(): Env {
 
 export function isDevTokenImportEnabled(): boolean {
   return getEnv().DEV_ALLOW_MANUAL_TOKEN_IMPORT === true;
+}
+
+export function getOllamaHost(): string {
+  const env = getEnv();
+  return env.OLLAMA_HOST || env.OLLAMA_BASE_URL;
+}
+
+export function getOllamaApiKey(): string {
+  const env = getEnv();
+  return env.OLLAMA_KEY || env.OLLAMA_API_KEY || "";
 }
 
 /**

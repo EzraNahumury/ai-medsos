@@ -53,6 +53,8 @@ export default function SettingsPage() {
       value: mask(env.TOKEN_ENCRYPTION_KEY),
     },
     { key: "OLLAMA_BASE_URL", ok: !!env.OLLAMA_BASE_URL, value: env.OLLAMA_BASE_URL },
+    { key: "OLLAMA_HOST", ok: !!env.OLLAMA_HOST, value: env.OLLAMA_HOST },
+    { key: "OLLAMA_KEY", ok: !!env.OLLAMA_KEY || !!env.OLLAMA_API_KEY, value: mask(env.OLLAMA_KEY || env.OLLAMA_API_KEY) },
     { key: "OLLAMA_MODEL", ok: !!env.OLLAMA_MODEL, value: env.OLLAMA_MODEL },
     {
       key: "DEV_ALLOW_MANUAL_TOKEN_IMPORT",

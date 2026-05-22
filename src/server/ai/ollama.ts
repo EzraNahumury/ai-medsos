@@ -4,7 +4,7 @@
  * callers can plug them in without crashing if Ollama is not running.
  */
 
-import { getEnv } from "@/lib/env";
+import { getEnv, getOllamaApiKey, getOllamaHost } from "@/lib/env";
 
 export type CommentAnalysis = {
   sentiment: "POSITIVE" | "NEUTRAL" | "NEGATIVE" | "UNKNOWN";
@@ -22,10 +22,19 @@ export type MediaAnalysis = {
   mock?: boolean;
 };
 
-async function ollamaReachable(baseUrl: string): Promise<boolean> {
+function buildOllamaApiUrl(host: string, path: string): string {
+  const trimmed = host.replace(/\/+$/, "");
+  const base = trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
+  return `${base}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+async function ollamaReachable(host: string, apiKey: string): Promise<boolean> {
+  const headers: Record<string, string> = { Accept: "application/json" };
+  if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
   try {
-    const r = await fetch(`${baseUrl}/api/tags`, {
+    const r = await fetch(buildOllamaApiUrl(host, "/tags"), {
       method: "GET",
+      headers,
       cache: "no-store",
     });
     return r.ok;
@@ -37,8 +46,9 @@ async function ollamaReachable(baseUrl: string): Promise<boolean> {
 export async function analyzeCommentWithOllama(
   commentText: string,
 ): Promise<CommentAnalysis> {
+  void commentText;
   const env = getEnv();
-  const reachable = await ollamaReachable(env.OLLAMA_BASE_URL);
+  const reachable = await ollamaReachable(getOllamaHost(), getOllamaApiKey());
   if (!reachable) {
     return {
       sentiment: "UNKNOWN",
@@ -63,8 +73,11 @@ export async function analyzeMediaWithOllama(
   _metrics: unknown,
   _comments: unknown,
 ): Promise<MediaAnalysis> {
+  void _media;
+  void _metrics;
+  void _comments;
   const env = getEnv();
-  const reachable = await ollamaReachable(env.OLLAMA_BASE_URL);
+  const reachable = await ollamaReachable(getOllamaHost(), getOllamaApiKey());
   if (!reachable) {
     return {
       summary: "(Ollama not reachable — placeholder summary)",

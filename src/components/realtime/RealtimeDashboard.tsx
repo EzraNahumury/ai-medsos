@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
 type RealtimeData = {
@@ -138,7 +138,6 @@ export default function RealtimeDashboard() {
   const [processing, setProcessing] = useState(false);
   const [processMsg, setProcessMsg] = useState<string | null>(null);
   const [syncing, setSyncing] = useState<number | null>(null);
-  const intervalRef = useRef<number | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -156,10 +155,15 @@ export default function RealtimeDashboard() {
   }, []);
 
   useEffect(() => {
-    load();
-    intervalRef.current = window.setInterval(load, 5000);
+    const initialLoad = window.setTimeout(() => {
+      void load();
+    }, 0);
+    const interval = window.setInterval(() => {
+      void load();
+    }, 5000);
     return () => {
-      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      window.clearTimeout(initialLoad);
+      window.clearInterval(interval);
     };
   }, [load]);
 

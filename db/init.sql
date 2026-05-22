@@ -190,3 +190,31 @@ CREATE TABLE IF NOT EXISTS `AuditLog` (
   KEY `idx_AuditLog_entity` (`entityType`, `entityId`),
   KEY `idx_AuditLog_createdAt` (`createdAt`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----- AiAgentConversation -----
+CREATE TABLE IF NOT EXISTS `AiAgentConversation` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `title` VARCHAR(255) NOT NULL,
+  `createdByEmail` VARCHAR(255) NULL,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deletedAt` DATETIME NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_AiAgentConversation_updatedAt` (`updatedAt`),
+  KEY `idx_AiAgentConversation_deletedAt` (`deletedAt`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----- AiAgentMessage -----
+CREATE TABLE IF NOT EXISTS `AiAgentMessage` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `conversationId` INT NOT NULL,
+  `role` VARCHAR(16) NOT NULL,
+  `content` LONGTEXT NOT NULL,
+  `model` VARCHAR(128) NULL,
+  `metadataJson` JSON NULL,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_AiAgentMessage_conversationId_createdAt` (`conversationId`, `createdAt`),
+  CONSTRAINT `fk_AiAgentMessage_conversation`
+    FOREIGN KEY (`conversationId`) REFERENCES `AiAgentConversation`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

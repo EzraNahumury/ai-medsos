@@ -28,11 +28,18 @@ export function getPool(): Pool {
 export type SqlParam =
   | string
   | number
+  | bigint
   | boolean
   | Date
   | null
-  | undefined
-  | Buffer;
+  | Buffer
+  | Uint8Array;
+
+type SqlParamInput = SqlParam | undefined;
+
+function normalizeParams(params: ReadonlyArray<SqlParamInput>): SqlParam[] {
+  return params.map((param) => (param === undefined ? null : param));
+}
 
 /**
  * Run a SELECT and return all rows as plain objects.
@@ -40,17 +47,17 @@ export type SqlParam =
  */
 export async function query<T = RowDataPacket>(
   sql: string,
-  params: ReadonlyArray<SqlParam> = [],
+  params: ReadonlyArray<SqlParamInput> = [],
 ): Promise<T[]> {
   const pool = getPool();
-  const [rows] = await pool.execute(sql, params as SqlParam[]);
+  const [rows] = await pool.execute(sql, normalizeParams(params));
   return rows as unknown as T[];
 }
 
 /** Run a SELECT and return at most one row (or null). */
 export async function queryOne<T = RowDataPacket>(
   sql: string,
-  params: ReadonlyArray<SqlParam> = [],
+  params: ReadonlyArray<SqlParamInput> = [],
 ): Promise<T | null> {
   const rows = await query<T>(sql, params);
   return rows[0] ?? null;
@@ -59,10 +66,10 @@ export async function queryOne<T = RowDataPacket>(
 /** Run an INSERT/UPDATE/DELETE and return affected/insertId. */
 export async function execute(
   sql: string,
-  params: ReadonlyArray<SqlParam> = [],
+  params: ReadonlyArray<SqlParamInput> = [],
 ): Promise<{ affectedRows: number; insertId: number }> {
   const pool = getPool();
-  const [result] = await pool.execute(sql, params as SqlParam[]);
+  const [result] = await pool.execute(sql, normalizeParams(params));
   const r = result as ResultSetHeader;
   return { affectedRows: r.affectedRows, insertId: r.insertId };
 }
