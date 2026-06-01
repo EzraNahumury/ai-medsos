@@ -23,25 +23,25 @@ function brandChipClass(brand: string): string {
 
 const StatIcon = {
   Accounts: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
       <circle cx="12" cy="8" r="3.5" />
       <path d="M4 20c1.2-4 4.2-6 8-6s6.8 2 8 6" />
     </svg>
   ),
   Media: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
       <rect x="3" y="3" width="18" height="18" rx="3" />
       <circle cx="9" cy="9" r="1.5" />
       <path d="m21 15-5-5L5 21" />
     </svg>
   ),
   Comments: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
       <path d="M21 12a8.5 8.5 0 0 1-12.4 7.5L3 21l1.5-5.6A8.5 8.5 0 1 1 21 12z" />
     </svg>
   ),
   Webhook: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
       <circle cx="6" cy="18" r="3" />
       <path d="M9.5 16 14 8" />
       <circle cx="16" cy="6" r="3" />
@@ -74,44 +74,20 @@ export default async function DashboardOverviewPage() {
   ]);
 
   const cards = [
-    {
-      label: "Connected Accounts",
-      value: accountCountValue,
-      href: "/dashboard/accounts",
-      icon: StatIcon.Accounts,
-      tone: "from-indigo-500/20 to-indigo-500/0 text-indigo-300",
-    },
-    {
-      label: "Total Media",
-      value: mediaCountValue,
-      href: "/dashboard/content",
-      icon: StatIcon.Media,
-      tone: "from-violet-500/20 to-violet-500/0 text-violet-300",
-    },
-    {
-      label: "Total Comments",
-      value: commentCountValue,
-      href: "/dashboard/comments",
-      icon: StatIcon.Comments,
-      tone: "from-fuchsia-500/20 to-fuchsia-500/0 text-fuchsia-300",
-    },
-    {
-      label: "Pending Webhooks",
-      value: pendingWebhooks,
-      href: "/dashboard/realtime",
-      icon: StatIcon.Webhook,
-      tone: "from-amber-500/20 to-amber-500/0 text-amber-300",
-    },
+    { label: "Connected accounts", value: accountCountValue, href: "/dashboard/accounts", icon: StatIcon.Accounts },
+    { label: "Total media", value: mediaCountValue, href: "/dashboard/content", icon: StatIcon.Media },
+    { label: "Total comments", value: commentCountValue, href: "/dashboard/comments", icon: StatIcon.Comments },
+    { label: "Pending webhooks", value: pendingWebhooks, href: "/dashboard/realtime", icon: StatIcon.Webhook },
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7">
       {/* Hero */}
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Overview</h1>
-          <p className="text-soft mt-1.5">
-            Real-time data ingestion snapshot across all connected Instagram brands.
+          <h1 className="text-[1.75rem] font-semibold tracking-tight text-[color:var(--fg)]">Overview</h1>
+          <p className="text-[color:var(--fg-muted)] mt-1 text-[15px]">
+            Data ingestion snapshot across your connected Instagram brands.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -119,7 +95,8 @@ export default async function DashboardOverviewPage() {
             Manage accounts
           </Link>
           <Link href="/dashboard/realtime" className="btn btn-primary">
-            <span className="live-dot" /> Open Realtime
+            <span className="live-dot" style={{ background: "#15170d", boxShadow: "0 0 0 3px rgba(21,23,13,0.2)" }} />
+            Open realtime
           </Link>
         </div>
       </div>
@@ -127,22 +104,19 @@ export default async function DashboardOverviewPage() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {cards.map((c) => (
-          <Link
-            key={c.label}
-            href={c.href}
-            className="card card-hover p-5 group relative overflow-hidden"
-          >
-            <div className={`absolute -top-8 -right-8 w-28 h-28 rounded-full bg-gradient-to-br ${c.tone} blur-2xl opacity-60 pointer-events-none`} />
-            <div className="relative">
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-faint">{c.icon}</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-4 h-4 text-faint opacity-0 group-hover:opacity-100 transition-opacity">
-                  <path d="M7 17L17 7M17 7H7M17 7v10" />
-                </svg>
+          <Link key={c.label} href={c.href} className="card card-hover p-5 group">
+            <div className="flex items-start justify-between">
+              <div className="w-9 h-9 rounded-lg bg-[color:var(--accent-soft)] text-[color:var(--accent)] flex items-center justify-center">
+                {c.icon}
               </div>
-              <div className="text-3xl font-semibold tracking-tight">{c.value.toLocaleString()}</div>
-              <div className="text-xs text-muted mt-1.5">{c.label}</div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="w-4 h-4 text-[color:var(--fg-faint)] opacity-0 group-hover:opacity-100 transition-opacity">
+                <path d="M7 17L17 7M17 7H7M17 7v10" />
+              </svg>
             </div>
+            <div className="text-[1.9rem] font-semibold tracking-tight tnum mt-4 text-[color:var(--fg)]">
+              {c.value.toLocaleString()}
+            </div>
+            <div className="text-[13px] text-[color:var(--fg-muted)] mt-0.5">{c.label}</div>
           </Link>
         ))}
       </div>
@@ -151,11 +125,8 @@ export default async function DashboardOverviewPage() {
       {accounts.length > 0 && (
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="section-title">Brand status</div>
-              <h2 className="font-semibold">Connected brands</h2>
-            </div>
-            <Link href="/dashboard/accounts" className="text-xs text-soft hover:text-fg">
+            <h2 className="font-semibold text-[color:var(--fg)]">Connected brands</h2>
+            <Link href="/dashboard/accounts" className="text-xs font-medium text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]">
               View all →
             </Link>
           </div>
@@ -164,10 +135,10 @@ export default async function DashboardOverviewPage() {
               <Link
                 key={a.id}
                 href={`/dashboard/accounts/${a.id}`}
-                className="card card-hover bg-[color:var(--bg-elev-2)] p-4 flex items-center gap-3"
+                className="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-elev-2)] hover:border-[color:var(--border-strong)] hover:bg-[color:var(--bg-elev-3)] transition-colors p-4 flex items-center gap-3"
               >
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-sm font-semibold shrink-0">
-                  {a.brandName[0]}
+                <div className="w-10 h-10 rounded-full bg-[color:var(--bg-elev-3)] border border-[color:var(--border)] flex items-center justify-center text-sm font-semibold text-[color:var(--fg-soft)] shrink-0">
+                  {(a.username?.[0] ?? a.brandName[0]).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
@@ -176,10 +147,10 @@ export default async function DashboardOverviewPage() {
                       {a.tokenStatus}
                     </span>
                   </div>
-                  <div className="text-xs text-muted mt-1 truncate">
+                  <div className="text-xs text-[color:var(--fg-muted)] mt-1.5 truncate">
                     @{a.username ?? a.igUserId}
                   </div>
-                  <div className="text-[10px] text-faint mt-0.5">
+                  <div className="text-[11px] text-[color:var(--fg-faint)] mt-0.5 tnum">
                     {a.followersCount?.toLocaleString() ?? "—"} followers · {a.mediaCount ?? "—"} posts
                   </div>
                 </div>
@@ -194,11 +165,8 @@ export default async function DashboardOverviewPage() {
         {/* Latest media (span 2) */}
         <div className="card p-5 lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="section-title">Recent</div>
-              <h2 className="font-semibold">Latest media</h2>
-            </div>
-            <Link href="/dashboard/content" className="text-xs text-soft hover:text-fg">
+            <h2 className="font-semibold text-[color:var(--fg)]">Latest media</h2>
+            <Link href="/dashboard/content" className="text-xs font-medium text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]">
               View all →
             </Link>
           </div>
@@ -222,14 +190,14 @@ export default async function DashboardOverviewPage() {
                   href={m.permalink ?? "#"}
                   target="_blank"
                   rel="noreferrer"
-                  className="card card-hover bg-[color:var(--bg-elev-2)] p-3 flex gap-3"
+                  className="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-elev-2)] hover:border-[color:var(--border-strong)] hover:bg-[color:var(--bg-elev-3)] transition-colors p-3 flex gap-3"
                 >
-                  <div className="w-16 h-16 rounded-md bg-[color:var(--bg-elev-3)] shrink-0 overflow-hidden flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-lg bg-[color:var(--bg-elev-3)] shrink-0 overflow-hidden flex items-center justify-center">
                     {m.thumbnailUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={m.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-faint text-xs">{m.mediaType?.slice(0, 1) ?? "?"}</span>
+                      <span className="text-[color:var(--fg-faint)] text-[10px] uppercase">{m.mediaType?.slice(0, 4) ?? "?"}</span>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -239,13 +207,10 @@ export default async function DashboardOverviewPage() {
                           {m.socialAccountBrandName}
                         </span>
                       )}
-                      <span className="text-[10px] text-faint uppercase tracking-wider">{m.mediaType}</span>
                     </div>
-                    <div className="text-xs text-soft line-clamp-2">{truncate(m.caption, 80) || "—"}</div>
-                    <div className="flex items-center gap-3 text-[10px] text-faint mt-1.5 mono">
-                      <span>♥ {m.likeCount ?? 0}</span>
-                      <span>💬 {m.commentsCount ?? 0}</span>
-                      <span>{relativeTime(m.timestamp)}</span>
+                    <div className="text-[13px] text-[color:var(--fg-soft)] line-clamp-2">{truncate(m.caption, 70) || "—"}</div>
+                    <div className="text-[11px] text-[color:var(--fg-faint)] mt-1.5 tnum">
+                      {(m.likeCount ?? 0).toLocaleString()} likes · {(m.commentsCount ?? 0).toLocaleString()} comments · {relativeTime(m.timestamp)}
                     </div>
                   </div>
                 </a>
@@ -257,11 +222,8 @@ export default async function DashboardOverviewPage() {
         {/* Latest webhook events */}
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="section-title">Events</div>
-              <h2 className="font-semibold">Webhook activity</h2>
-            </div>
-            <Link href="/dashboard/realtime" className="text-xs text-soft hover:text-fg">
+            <h2 className="font-semibold text-[color:var(--fg)]">Webhook activity</h2>
+            <Link href="/dashboard/realtime" className="text-xs font-medium text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]">
               View all →
             </Link>
           </div>
@@ -281,9 +243,9 @@ export default async function DashboardOverviewPage() {
               description="Set up webhooks to receive realtime events."
             />
           ) : (
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {latestEvents.map((e) => (
-                <li key={e.id} className="flex items-start gap-2.5 py-2 border-b border-[color:var(--border-soft)] last:border-0">
+                <li key={e.id} className="flex items-center gap-2.5 py-2.5 border-b border-[color:var(--border-soft)] last:border-0">
                   <span
                     className={
                       e.processingStatus === "DONE"
@@ -296,8 +258,8 @@ export default async function DashboardOverviewPage() {
                     {e.processingStatus}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium">{e.fieldName ?? "?"}</div>
-                    <div className="text-[10px] text-faint mt-0.5">
+                    <div className="text-[13px] font-medium text-[color:var(--fg)]">{e.fieldName ?? "?"}</div>
+                    <div className="text-[11px] text-[color:var(--fg-faint)] mt-0.5">
                       {e.objectType ?? "—"} · {relativeTime(e.receivedAt)}
                     </div>
                   </div>
@@ -309,12 +271,9 @@ export default async function DashboardOverviewPage() {
       </div>
 
       {/* Latest metrics */}
-      <div className="card p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <div className="section-title">Insights</div>
-            <h2 className="font-semibold">Latest metric snapshots</h2>
-          </div>
+      <div className="card overflow-hidden">
+        <div className="flex items-center justify-between p-5 pb-4">
+          <h2 className="font-semibold text-[color:var(--fg)]">Latest metric snapshots</h2>
         </div>
         {latestSnapshots.length === 0 ? (
           <EmptyState
@@ -328,35 +287,33 @@ export default async function DashboardOverviewPage() {
             description="Run Sync Insights on a connected account."
           />
         ) : (
-          <div className="overflow-x-auto -mx-5">
-            <div className="min-w-full px-5">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-[color:var(--bg-elev-2)]">
-                    <th className="text-left px-4 py-3 text-[10px] font-medium uppercase tracking-widest text-[color:var(--fg-muted)]">Media</th>
-                    <th className="text-right px-4 py-3 text-[10px] font-medium uppercase tracking-widest text-[color:var(--fg-muted)]">Reach</th>
-                    <th className="text-right px-4 py-3 text-[10px] font-medium uppercase tracking-widest text-[color:var(--fg-muted)]">Likes</th>
-                    <th className="text-right px-4 py-3 text-[10px] font-medium uppercase tracking-widest text-[color:var(--fg-muted)]">Comments</th>
-                    <th className="text-right px-4 py-3 text-[10px] font-medium uppercase tracking-widest text-[color:var(--fg-muted)]">Engagement</th>
-                    <th className="text-right px-4 py-3 text-[10px] font-medium uppercase tracking-widest text-[color:var(--fg-muted)]">Collected</th>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-[color:var(--bg-elev-2)] border-y border-[color:var(--border)] text-[11px] font-medium uppercase tracking-wide text-[color:var(--fg-muted)]">
+                  <th className="text-left px-5 py-2.5">Media</th>
+                  <th className="text-right px-5 py-2.5">Reach</th>
+                  <th className="text-right px-5 py-2.5">Likes</th>
+                  <th className="text-right px-5 py-2.5">Comments</th>
+                  <th className="text-right px-5 py-2.5">Engagement</th>
+                  <th className="text-right px-5 py-2.5">Collected</th>
+                </tr>
+              </thead>
+              <tbody>
+                {latestSnapshots.map((s) => (
+                  <tr key={s.id} className="border-b border-[color:var(--border-soft)] last:border-0 hover:bg-[color:var(--bg-elev-2)] transition-colors">
+                    <td className="px-5 py-3 mono text-xs text-[color:var(--fg-soft)] whitespace-nowrap">#{s.instagramMediaId}</td>
+                    <td className="px-5 py-3 tnum text-right whitespace-nowrap text-[color:var(--fg)]">{s.reach?.toLocaleString() ?? "—"}</td>
+                    <td className="px-5 py-3 tnum text-right whitespace-nowrap text-[color:var(--fg)]">{s.likes?.toLocaleString() ?? "—"}</td>
+                    <td className="px-5 py-3 tnum text-right whitespace-nowrap text-[color:var(--fg)]">{s.comments?.toLocaleString() ?? "—"}</td>
+                    <td className="px-5 py-3 tnum text-right whitespace-nowrap font-medium text-[color:var(--accent)]">
+                      {s.engagementRate != null ? `${s.engagementRate.toFixed(2)}%` : "—"}
+                    </td>
+                    <td className="px-5 py-3 text-right text-xs text-[color:var(--fg-muted)] whitespace-nowrap">{formatDateTime(s.collectedAt)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {latestSnapshots.map((s) => (
-                    <tr key={s.id} className="border-t border-[color:var(--border-soft)] hover:bg-[color:var(--bg-elev-2)] transition-colors">
-                      <td className="px-4 py-3 mono text-xs text-[color:var(--fg-soft)] whitespace-nowrap">#{s.instagramMediaId}</td>
-                      <td className="px-4 py-3 mono text-right whitespace-nowrap">{s.reach?.toLocaleString() ?? "—"}</td>
-                      <td className="px-4 py-3 mono text-right whitespace-nowrap">{s.likes?.toLocaleString() ?? "—"}</td>
-                      <td className="px-4 py-3 mono text-right whitespace-nowrap">{s.comments?.toLocaleString() ?? "—"}</td>
-                      <td className="px-4 py-3 mono text-right whitespace-nowrap text-[color:var(--accent)] font-medium">
-                        {s.engagementRate != null ? `${s.engagementRate.toFixed(2)}%` : "—"}
-                      </td>
-                      <td className="px-4 py-3 text-right text-xs text-[color:var(--fg-muted)] whitespace-nowrap">{formatDateTime(s.collectedAt)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

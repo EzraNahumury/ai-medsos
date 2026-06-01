@@ -44,8 +44,8 @@ export default async function CommentsPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Comments</h1>
-        <p className="text-soft mt-1.5">
+        <h1 className="text-[1.75rem] font-semibold tracking-tight text-[color:var(--fg)]">Comments</h1>
+        <p className="text-[color:var(--fg-muted)] mt-1 text-[15px]">
           Showing {comments.length.toLocaleString()} of {total.toLocaleString()} Instagram comments
           {brand ? <> for <span className="font-medium text-[color:var(--fg)]">{brand}</span></> : <> across all brands</>}.
         </p>
@@ -105,7 +105,7 @@ export default async function CommentsPage({
                 </div>
                 <div className="flex items-center gap-3 mt-1.5 text-[10px] text-[color:var(--fg-faint)]">
                   {c.likeCount != null && (
-                    <span className="mono">♥ {c.likeCount}</span>
+                    <span className="tnum">{c.likeCount.toLocaleString()} likes</span>
                   )}
                   {c.mediaPermalink && (
                     <a

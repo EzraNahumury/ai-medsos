@@ -223,7 +223,7 @@ function renderInline(text: string): ReactNode[] {
 
     if (token.startsWith("**") && token.endsWith("**")) {
       nodes.push(
-        <strong key={`${match.index}-strong`} className="font-semibold text-white">
+        <strong key={`${match.index}-strong`} className="font-semibold text-[color:var(--fg)]">
           {token.slice(2, -2)}
         </strong>,
       );
@@ -345,7 +345,7 @@ function AssistantContent({ content }: { content: string }) {
           return (
             <HeadingTag
               key={`${block.type}-${index}`}
-              className="pt-1 text-base font-semibold text-white"
+              className="pt-1 text-base font-semibold text-[color:var(--fg)]"
             >
               {block.text}
             </HeadingTag>
@@ -628,7 +628,7 @@ export default function AiAgentChat() {
       <section className="flex min-w-0 flex-1 flex-col">
         <header className="flex shrink-0 items-center justify-between border-b border-[color:var(--border)] px-5 py-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-[color:var(--accent)] flex items-center justify-center text-white shrink-0">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                 <path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
                 <circle cx="12" cy="12" r="3.5" />
@@ -636,10 +636,10 @@ export default function AiAgentChat() {
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="font-semibold">AI Agent</h1>
+                <h1 className="font-semibold text-[color:var(--fg)]">AI Agent</h1>
                 <span className="badge badge-info badge-dot">Ollama Cloud</span>
               </div>
-              <div className="text-xs text-muted truncate">
+              <div className="text-xs text-[color:var(--fg-muted)] truncate">
                 {activeConversation?.title ?? "Instagram database assistant"}
               </div>
             </div>
@@ -680,14 +680,14 @@ export default function AiAgentChat() {
 
             {showEmptyState && (
               <div className="flex min-h-[480px] flex-col items-center justify-center text-center fade-in">
-                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-xl shadow-indigo-500/30">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7">
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-[color:var(--accent-soft)] text-[color:var(--accent)]">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7">
                     <path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
                     <circle cx="12" cy="12" r="3.5" />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-semibold">How can I help you today?</h2>
-                <p className="mt-2 max-w-md text-sm text-soft">
+                <h2 className="text-2xl font-semibold text-[color:var(--fg)]">How can I help you today?</h2>
+                <p className="mt-2 max-w-md text-sm text-[color:var(--fg-muted)]">
                   Saya bisa analisis database Instagram kamu — engagement, sentiment komentar,
                   performa konten, status sync. Mulai dengan salah satu pertanyaan di bawah.
                 </p>
@@ -718,8 +718,8 @@ export default function AiAgentChat() {
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                     message.role === "user"
-                      ? "bg-[color:var(--bg-elev-3)] text-soft"
-                      : "bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-md shadow-indigo-500/20"
+                      ? "bg-[color:var(--bg-elev-3)] border border-[color:var(--border)] text-[color:var(--fg-soft)]"
+                      : "bg-[color:var(--accent)] text-white"
                   }`}
                 >
                   {message.role === "user" ? (
@@ -735,10 +735,10 @@ export default function AiAgentChat() {
                   )}
                 </div>
                 <div
-                  className={`rounded-2xl px-4 py-3 max-w-[85%] ${
+                  className={`rounded-2xl px-4 py-3 max-w-[85%] text-[color:var(--fg)] ${
                     message.role === "user"
-                      ? "bg-[color:var(--bg-elev-3)] text-fg border border-[color:var(--border-strong)]"
-                      : "bg-[color:var(--bg-elev-2)] text-fg border border-[color:var(--border)]"
+                      ? "bg-[color:var(--accent-soft)] border border-[rgba(79,70,229,0.18)]"
+                      : "bg-[color:var(--bg-elev-2)] border border-[color:var(--border)]"
                   } ${message.pending ? "opacity-60" : ""}`}
                 >
                   {message.role === "assistant" ? (
@@ -752,7 +752,7 @@ export default function AiAgentChat() {
 
             {loading && (
               <div className="flex gap-3 fade-in">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/20">
+                <div className="w-8 h-8 rounded-lg bg-[color:var(--accent)] text-white flex items-center justify-center shrink-0">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
                     <path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
                     <circle cx="12" cy="12" r="3.5" />
@@ -763,7 +763,7 @@ export default function AiAgentChat() {
                     <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--accent)] animate-pulse" />
                     <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--accent)] animate-pulse [animation-delay:200ms]" />
                     <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--accent)] animate-pulse [animation-delay:400ms]" />
-                    <span className="text-xs text-muted ml-2">Analyzing database…</span>
+                    <span className="text-xs text-[color:var(--fg-muted)] ml-2">Analyzing database…</span>
                   </div>
                 </div>
               </div>
@@ -788,7 +788,7 @@ export default function AiAgentChat() {
               />
               <button
                 type="submit"
-                className="absolute right-2 bottom-2 w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-white shadow-md shadow-indigo-500/30 transition-all"
+                className="absolute right-2 bottom-2 w-9 h-9 rounded-lg bg-[color:var(--accent)] hover:bg-[color:var(--accent-strong)] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-white transition-colors"
                 disabled={loading || input.trim().length === 0}
                 aria-label="Send"
               >

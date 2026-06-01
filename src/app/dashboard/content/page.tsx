@@ -36,8 +36,8 @@ export default async function ContentPage({
     <div className="space-y-6">
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Content</h1>
-          <p className="text-soft mt-1.5">
+          <h1 className="text-[1.75rem] font-semibold tracking-tight text-[color:var(--fg)]">Content</h1>
+          <p className="text-[color:var(--fg-muted)] mt-1 text-[15px]">
             Showing {media.length.toLocaleString()} of {total.toLocaleString()} Instagram media
             {brand ? <> for <span className="font-medium text-[color:var(--fg)]">{brand}</span></> : <> across all brands</>}.
           </p>
@@ -75,24 +75,22 @@ export default async function ContentPage({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[color:var(--bg-elev-2)] text-[10px] font-medium uppercase tracking-widest text-[color:var(--fg-muted)]">
-                  <th className="text-left px-4 py-3">Brand</th>
-                  <th className="text-left px-4 py-3">User</th>
-                  <th className="text-left px-4 py-3">Type</th>
-                  <th className="text-left px-4 py-3">Caption</th>
-                  <th className="text-left px-4 py-3 whitespace-nowrap">Posted</th>
-                  <th className="text-right px-4 py-3">Likes</th>
-                  <th className="text-right px-4 py-3">Comments</th>
-                  <th className="text-right px-4 py-3">Link</th>
+                <tr className="bg-[color:var(--bg-elev-2)] border-b border-[color:var(--border)] text-[11px] font-medium uppercase tracking-wide text-[color:var(--fg-muted)]">
+                  <th className="text-left px-4 py-2.5">Brand</th>
+                  <th className="text-left px-4 py-2.5">User</th>
+                  <th className="text-left px-4 py-2.5">Type</th>
+                  <th className="text-left px-4 py-2.5">Caption</th>
+                  <th className="text-left px-4 py-2.5 whitespace-nowrap">Posted</th>
+                  <th className="text-right px-4 py-2.5">Likes</th>
+                  <th className="text-right px-4 py-2.5">Comments</th>
+                  <th className="text-right px-4 py-2.5">Link</th>
                 </tr>
               </thead>
               <tbody>
-                {media.map((m, idx) => (
+                {media.map((m) => (
                   <tr
                     key={m.id}
-                    className={`border-t border-[color:var(--border-soft)] hover:bg-[color:var(--bg-elev-2)] transition-colors ${
-                      idx % 2 === 1 ? "bg-[color:var(--bg-elev-1)]/40" : ""
-                    }`}
+                    className="border-t border-[color:var(--border-soft)] hover:bg-[color:var(--bg-elev-2)] transition-colors"
                   >
                     <td className="px-4 py-3 whitespace-nowrap">
                       {m.socialAccountBrandName && (
@@ -120,10 +118,10 @@ export default async function ContentPage({
                     <td className="px-4 py-3 text-xs text-[color:var(--fg-muted)] whitespace-nowrap">
                       {formatDateTime(m.timestamp)}
                     </td>
-                    <td className="px-4 py-3 mono text-right whitespace-nowrap">
+                    <td className="px-4 py-3 tnum text-right whitespace-nowrap text-[color:var(--fg)]">
                       {m.likeCount?.toLocaleString() ?? "—"}
                     </td>
-                    <td className="px-4 py-3 mono text-right whitespace-nowrap">
+                    <td className="px-4 py-3 tnum text-right whitespace-nowrap text-[color:var(--fg)]">
                       {m.commentsCount?.toLocaleString() ?? "—"}
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">

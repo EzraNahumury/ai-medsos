@@ -28,8 +28,8 @@ export default async function AccountsPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Accounts</h1>
-          <p className="text-soft mt-1.5">
+          <h1 className="text-[1.75rem] font-semibold tracking-tight text-[color:var(--fg)]">Accounts</h1>
+          <p className="text-[color:var(--fg-muted)] mt-1 text-[15px]">
             Manage Instagram brand connections and trigger sync jobs.
           </p>
         </div>
@@ -69,8 +69,8 @@ export default async function AccountsPage() {
             {accounts.map((a) => (
               <div key={a.id} className="card card-hover p-5 flex flex-col gap-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-base font-semibold shrink-0">
-                    {a.username?.[0]?.toUpperCase() ?? a.brandName[0]}
+                  <div className="w-12 h-12 rounded-full bg-[color:var(--bg-elev-3)] border border-[color:var(--border)] flex items-center justify-center text-[color:var(--fg-soft)] text-base font-semibold shrink-0">
+                    {(a.username?.[0] ?? a.brandName[0]).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
                     <Link href={`/dashboard/accounts/${a.id}`} className="flex items-center gap-2 hover:opacity-80">
@@ -97,12 +97,12 @@ export default async function AccountsPage() {
                 {/* Stats row */}
                 <div className="grid grid-cols-2 gap-2">
                   <div className="rounded-lg bg-[color:var(--bg-elev-2)] border border-[color:var(--border-soft)] px-3 py-2">
-                    <div className="text-[10px] text-faint uppercase tracking-wider">Followers</div>
-                    <div className="text-base font-semibold mono mt-0.5">{a.followersCount?.toLocaleString() ?? "—"}</div>
+                    <div className="text-[10px] text-[color:var(--fg-faint)] uppercase tracking-wide">Followers</div>
+                    <div className="text-base font-semibold tnum mt-0.5 text-[color:var(--fg)]">{a.followersCount?.toLocaleString() ?? "—"}</div>
                   </div>
                   <div className="rounded-lg bg-[color:var(--bg-elev-2)] border border-[color:var(--border-soft)] px-3 py-2">
-                    <div className="text-[10px] text-faint uppercase tracking-wider">Media</div>
-                    <div className="text-base font-semibold mono mt-0.5">{a.mediaCount?.toLocaleString() ?? "—"}</div>
+                    <div className="text-[10px] text-[color:var(--fg-faint)] uppercase tracking-wide">Media</div>
+                    <div className="text-base font-semibold tnum mt-0.5 text-[color:var(--fg)]">{a.mediaCount?.toLocaleString() ?? "—"}</div>
                   </div>
                 </div>
 

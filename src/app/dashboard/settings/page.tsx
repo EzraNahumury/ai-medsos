@@ -30,7 +30,7 @@ export default function SettingsPage() {
   } catch (e) {
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
+        <h1 className="text-[1.75rem] font-semibold tracking-tight text-[color:var(--fg)]">Settings</h1>
         <div className="card p-4 border-[color:var(--danger)]/40 bg-[color:var(--danger)]/10 text-[color:var(--danger)] text-sm whitespace-pre-wrap mono">
           {e instanceof Error ? e.message : String(e)}
         </div>
@@ -134,8 +134,8 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-soft mt-1.5">
+        <h1 className="text-[1.75rem] font-semibold tracking-tight text-[color:var(--fg)]">Settings</h1>
+        <p className="text-[color:var(--fg-muted)] mt-1 text-[15px]">
           Environment readiness. All secrets are masked.
         </p>
       </div>

@@ -283,10 +283,10 @@ export default function RealtimeDashboard() {
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <span className="live-dot" />
-            <span className="section-title !mb-0">Live</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--success)]">Live</span>
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight">Realtime monitor</h1>
-          <p className="text-soft mt-1.5">
+          <h1 className="text-[1.75rem] font-semibold tracking-tight text-[color:var(--fg)]">Realtime monitor</h1>
+          <p className="text-[color:var(--fg-muted)] mt-1 text-[15px]">
             Auto-refreshing every 5 seconds · Server time {fmtTime(data.serverTime)}
           </p>
         </div>
@@ -526,9 +526,11 @@ export default function RealtimeDashboard() {
                     >
                       {m.caption?.slice(0, 100) ?? "(no caption)"}
                     </a>
-                    <div className="text-[10px] text-faint mt-1 mono flex items-center gap-3">
-                      <span>♥ {m.likeCount ?? 0}</span>
-                      <span>💬 {m.commentsCount ?? 0}</span>
+                    <div className="text-[10px] text-[color:var(--fg-faint)] mt-1 tnum flex items-center gap-2">
+                      <span>{(m.likeCount ?? 0).toLocaleString()} likes</span>
+                      <span>·</span>
+                      <span>{(m.commentsCount ?? 0).toLocaleString()} comm</span>
+                      <span>·</span>
                       <span>{relTime(m.timestamp)}</span>
                     </div>
                   </div>
@@ -571,15 +573,15 @@ export default function RealtimeDashboard() {
                   {data.latestMetricSnapshots.map((s) => (
                     <tr key={s.id} className={TRow}>
                       <td className={`${TD} text-[color:var(--fg-muted)] text-xs`}>{relTime(s.collectedAt)}</td>
-                      <td className={`${TD} mono text-xs`}>#{s.instagramMediaId}</td>
-                      <td className={`${TDR} mono`}>{s.reach?.toLocaleString() ?? "—"}</td>
-                      <td className={`${TDR} mono`}>{s.impressions?.toLocaleString() ?? "—"}</td>
-                      <td className={`${TDR} mono`}>{s.likes?.toLocaleString() ?? "—"}</td>
-                      <td className={`${TDR} mono`}>{s.comments?.toLocaleString() ?? "—"}</td>
-                      <td className={`${TDR} mono`}>{s.shares?.toLocaleString() ?? "—"}</td>
-                      <td className={`${TDR} mono`}>{s.saves?.toLocaleString() ?? "—"}</td>
-                      <td className={`${TDR} mono`}>{(s.views ?? s.plays)?.toLocaleString() ?? "—"}</td>
-                      <td className={`${TDR} mono text-[color:var(--accent)] font-medium`}>
+                      <td className={`${TD} mono text-xs text-[color:var(--fg-soft)]`}>#{s.instagramMediaId}</td>
+                      <td className={`${TDR} tnum text-[color:var(--fg)]`}>{s.reach?.toLocaleString() ?? "—"}</td>
+                      <td className={`${TDR} tnum text-[color:var(--fg)]`}>{s.impressions?.toLocaleString() ?? "—"}</td>
+                      <td className={`${TDR} tnum text-[color:var(--fg)]`}>{s.likes?.toLocaleString() ?? "—"}</td>
+                      <td className={`${TDR} tnum text-[color:var(--fg)]`}>{s.comments?.toLocaleString() ?? "—"}</td>
+                      <td className={`${TDR} tnum text-[color:var(--fg)]`}>{s.shares?.toLocaleString() ?? "—"}</td>
+                      <td className={`${TDR} tnum text-[color:var(--fg)]`}>{s.saves?.toLocaleString() ?? "—"}</td>
+                      <td className={`${TDR} tnum text-[color:var(--fg)]`}>{(s.views ?? s.plays)?.toLocaleString() ?? "—"}</td>
+                      <td className={`${TDR} tnum text-[color:var(--accent)] font-medium`}>
                         {s.engagementRate != null ? s.engagementRate.toFixed(2) : "—"}
                       </td>
                     </tr>
@@ -636,11 +638,11 @@ function Counter({
   value: number;
   tone?: "default" | "warning";
 }) {
-  const accent = tone === "warning" && value > 0 ? "text-[color:var(--warning)]" : "";
+  const accent = tone === "warning" && value > 0 ? "text-[color:var(--warning)]" : "text-[color:var(--fg)]";
   return (
     <div className="card p-4">
-      <div className="text-[10px] text-faint uppercase tracking-widest">{label}</div>
-      <div className={`text-3xl font-semibold mono mt-1 ${accent}`}>{value.toLocaleString()}</div>
+      <div className="text-[11px] text-[color:var(--fg-faint)] uppercase tracking-wide">{label}</div>
+      <div className={`text-[1.75rem] font-semibold tnum mt-1 ${accent}`}>{value.toLocaleString()}</div>
     </div>
   );
 }

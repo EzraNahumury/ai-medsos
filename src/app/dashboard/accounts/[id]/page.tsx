@@ -52,13 +52,11 @@ export default async function AccountDetailPage({
       </div>
 
       {/* Hero */}
-      <div className="card p-6 relative overflow-hidden">
-        <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-gradient-to-br from-indigo-500/20 to-violet-500/0 blur-3xl pointer-events-none" />
-
-        <div className="relative flex items-start justify-between gap-6 flex-wrap">
+      <div className="card p-6">
+        <div className="flex items-start justify-between gap-6 flex-wrap">
           <div className="flex items-start gap-5 min-w-0">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-2xl font-semibold shadow-xl shadow-indigo-500/20 shrink-0">
-              {account.username?.[0]?.toUpperCase() ?? account.brandName[0]}
+            <div className="w-16 h-16 rounded-2xl bg-[color:var(--bg-elev-3)] border border-[color:var(--border)] flex items-center justify-center text-[color:var(--fg-soft)] text-2xl font-semibold shrink-0">
+              {(account.username?.[0] ?? account.brandName[0]).toUpperCase()}
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
@@ -90,7 +88,7 @@ export default async function AccountDetailPage({
         </div>
 
         {/* Stat row */}
-        <div className="relative grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
           <Stat label="Followers" value={account.followersCount?.toLocaleString()} />
           <Stat label="Following" value={account.followsCount?.toLocaleString()} />
           <Stat label="Media" value={account.mediaCount?.toLocaleString()} />
@@ -98,7 +96,7 @@ export default async function AccountDetailPage({
         </div>
 
         {/* Sync times */}
-        <div className="relative grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-[11px]">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-[11px]">
           <SyncRow label="Last profile" at={account.lastProfileSyncAt} />
           <SyncRow label="Last media" at={account.lastMediaSyncAt} />
           <SyncRow label="Last insights" at={account.lastInsightSyncAt} />
@@ -150,12 +148,12 @@ export default async function AccountDetailPage({
                   )}
                 </div>
                 <div className="p-2.5 flex-1 flex flex-col">
-                  <div className="text-[10px] text-faint uppercase tracking-wider mb-1">{m.mediaType}</div>
-                  <div className="text-xs text-soft line-clamp-2 flex-1">{truncate(m.caption, 60) || "—"}</div>
-                  <div className="flex items-center justify-between text-[10px] text-faint mt-2 mono">
-                    <span>♥ {m.likeCount ?? 0}</span>
-                    <span>💬 {m.commentsCount ?? 0}</span>
-                    <span>{relativeTime(m.timestamp)}</span>
+                  <div className="text-[10px] text-[color:var(--fg-faint)] uppercase tracking-wide mb-1">{m.mediaType}</div>
+                  <div className="text-xs text-[color:var(--fg-soft)] line-clamp-2 flex-1">{truncate(m.caption, 60) || "—"}</div>
+                  <div className="flex items-center gap-2 text-[10px] text-[color:var(--fg-faint)] mt-2 tnum">
+                    <span>{(m.likeCount ?? 0).toLocaleString()} likes</span>
+                    <span>·</span>
+                    <span>{(m.commentsCount ?? 0).toLocaleString()} comm</span>
                   </div>
                 </div>
               </a>
@@ -195,13 +193,13 @@ export default async function AccountDetailPage({
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium">@{c.username ?? "anonymous"}</span>
-                      <span className="text-[10px] text-faint">{relativeTime(c.timestamp)}</span>
+                      <span className="text-sm font-medium text-[color:var(--fg)]">@{c.username ?? "anonymous"}</span>
+                      <span className="text-[10px] text-[color:var(--fg-faint)]">{relativeTime(c.timestamp)}</span>
                       {c.likeCount ? (
-                        <span className="text-[10px] text-faint mono">♥ {c.likeCount}</span>
+                        <span className="text-[10px] text-[color:var(--fg-faint)] tnum">{c.likeCount} likes</span>
                       ) : null}
                     </div>
-                    <div className="text-sm text-soft mt-0.5 break-words">{c.text ?? "—"}</div>
+                    <div className="text-sm text-[color:var(--fg-soft)] mt-0.5 break-words">{c.text ?? "—"}</div>
                   </div>
                 </li>
               ))}
@@ -264,8 +262,8 @@ export default async function AccountDetailPage({
 function Stat({ label, value }: { label: string; value: string | number | null | undefined }) {
   return (
     <div className="rounded-lg bg-[color:var(--bg-elev-2)] border border-[color:var(--border-soft)] px-4 py-3">
-      <div className="text-[10px] text-faint uppercase tracking-wider">{label}</div>
-      <div className="text-lg font-semibold mt-0.5 mono">{value ?? "—"}</div>
+      <div className="text-[10px] text-[color:var(--fg-faint)] uppercase tracking-wide">{label}</div>
+      <div className="text-lg font-semibold mt-0.5 tnum text-[color:var(--fg)]">{value ?? "—"}</div>
     </div>
   );
 }

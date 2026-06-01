@@ -8,14 +8,11 @@ type Props = {
   totalCount: number;
 };
 
-function brandChipClass(brand: string): string {
-  switch (brand) {
-    case "Ayres": return "brand-chip-ayres";
-    case "Ava": return "brand-chip-ava";
-    case "Saifenu": return "brand-chip-saifenu";
-    default: return "";
-  }
-}
+const brandDot: Record<string, string> = {
+  Ayres: "#ea580c",
+  Ava: "#db2777",
+  Saifenu: "#0891b2",
+};
 
 export default function BrandFilter({
   basePath,
@@ -23,18 +20,13 @@ export default function BrandFilter({
   countByBrand,
   totalCount,
 }: Props) {
-  const pills: Array<{ key: string | null; label: string; count: number; cls: string }> = [
-    { key: null, label: "All", count: totalCount, cls: "" },
-    ...VALID_BRANDS.map((b) => ({
-      key: b,
-      label: b,
-      count: countByBrand[b] ?? 0,
-      cls: brandChipClass(b),
-    })),
+  const pills: Array<{ key: string | null; label: string; count: number }> = [
+    { key: null, label: "All", count: totalCount },
+    ...VALID_BRANDS.map((b) => ({ key: b, label: b, count: countByBrand[b] ?? 0 })),
   ];
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="inline-flex flex-wrap items-center gap-1 p-1 rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-elev-2)]">
       {pills.map((p) => {
         const active = (selected ?? null) === p.key;
         const href = p.key ? `${basePath}?brand=${encodeURIComponent(p.key)}` : basePath;
@@ -42,24 +34,19 @@ export default function BrandFilter({
           <Link
             key={p.key ?? "_all"}
             href={href}
-            className={`group inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all
-              ${
-                active
-                  ? `${
-                      p.key
-                        ? `${p.cls} ring-2 ring-offset-2 ring-offset-[color:var(--bg)] ring-current`
-                        : "bg-[color:var(--accent-soft)] border-[color:var(--accent-strong)] text-[color:var(--accent)]"
-                    }`
-                  : `bg-[color:var(--bg-elev-2)] border-[color:var(--border)] text-[color:var(--fg-soft)] hover:border-[color:var(--border-strong)] hover:text-[color:var(--fg)]`
-              }
-            `}
+            className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors ${
+              active
+                ? "bg-[color:var(--accent)] text-[#15170d] border border-[color:var(--accent)]"
+                : "text-[color:var(--fg-muted)] hover:text-[color:var(--fg)] border border-transparent"
+            }`}
           >
+            {p.key && (
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: active ? "#15170d" : brandDot[p.key] }} />
+            )}
             <span>{p.label}</span>
             <span
-              className={`inline-flex items-center justify-center min-w-[1.5rem] h-5 px-1.5 rounded-full text-[10px] mono ${
-                active
-                  ? "bg-black/30"
-                  : "bg-[color:var(--bg-elev-3)] text-[color:var(--fg-muted)]"
+              className={`tnum text-[11px] ${
+                active ? "text-[#15170d]/70" : "text-[color:var(--fg-faint)]"
               }`}
             >
               {p.count.toLocaleString()}
