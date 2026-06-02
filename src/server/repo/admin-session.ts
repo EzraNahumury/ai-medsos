@@ -32,7 +32,7 @@ export async function createSession(input: {
   expiresAt: Date;
 }): Promise<void> {
   await execute(
-    "INSERT INTO `AdminSession` (`sessionToken`, `email`, `expiresAt`) VALUES (?, ?, ?)",
+    "INSERT INTO `adminsession` (`sessionToken`, `email`, `expiresAt`) VALUES (?, ?, ?)",
     [input.sessionToken, input.email, input.expiresAt],
   );
 }
@@ -41,21 +41,21 @@ export async function findBySessionToken(
   sessionToken: string,
 ): Promise<AdminSessionRow | null> {
   const row = await queryOne<Raw>(
-    "SELECT `id`, `sessionToken`, `email`, `expiresAt`, `createdAt` FROM `AdminSession` WHERE `sessionToken` = ?",
+    "SELECT `id`, `sessionToken`, `email`, `expiresAt`, `createdAt` FROM `adminsession` WHERE `sessionToken` = ?",
     [sessionToken],
   );
   return row ? mapRow(row) : null;
 }
 
 export async function deleteBySessionToken(sessionToken: string): Promise<void> {
-  await execute("DELETE FROM `AdminSession` WHERE `sessionToken` = ?", [
+  await execute("DELETE FROM `adminsession` WHERE `sessionToken` = ?", [
     sessionToken,
   ]);
 }
 
 export async function deleteExpired(): Promise<number> {
   const r = await execute(
-    "DELETE FROM `AdminSession` WHERE `expiresAt` < NOW()",
+    "DELETE FROM `adminsession` WHERE `expiresAt` < NOW()",
   );
   return r.affectedRows;
 }

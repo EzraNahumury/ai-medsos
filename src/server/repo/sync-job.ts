@@ -24,7 +24,7 @@ export async function createJob(input: {
   startedAt?: Date | null;
 }): Promise<number> {
   const r = await execute(
-    "INSERT INTO `SyncJob` (`jobType`, `socialAccountId`, `status`, `startedAt`) VALUES (?, ?, ?, ?)",
+    "INSERT INTO `syncjob` (`jobType`, `socialAccountId`, `status`, `startedAt`) VALUES (?, ?, ?, ?)",
     [
       input.jobType,
       input.socialAccountId ?? null,
@@ -45,7 +45,7 @@ export async function updateJob(
   },
 ): Promise<void> {
   await execute(
-    "UPDATE `SyncJob` SET " +
+    "UPDATE `syncjob` SET " +
       "`status` = COALESCE(?, `status`), " +
       "`errorMessage` = ?, " +
       "`payload` = COALESCE(?, `payload`), " +
@@ -64,7 +64,7 @@ export async function updateJob(
 export async function listRecent(limit = 10): Promise<SyncJobRow[]> {
   const rows = await query<Raw>(
     "SELECT `id`, `jobType`, `socialAccountId`, `status`, `errorMessage`, `createdAt`, `startedAt`, `finishedAt` " +
-      "FROM `SyncJob` ORDER BY `createdAt` DESC LIMIT " +
+      "FROM `syncjob` ORDER BY `createdAt` DESC LIMIT " +
       (Number(limit) | 0),
   );
   return rows.map((r) => ({

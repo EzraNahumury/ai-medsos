@@ -17,7 +17,7 @@ export type CreateSnapshotInput = {
 
 export async function createSnapshot(input: CreateSnapshotInput): Promise<void> {
   await execute(
-    `INSERT INTO \`MediaMetricSnapshot\`
+    `INSERT INTO \`mediametricsnapshot\`
        (\`instagramMediaId\`, \`views\`, \`plays\`, \`reach\`, \`impressions\`, \`likes\`, \`comments\`,
         \`shares\`, \`saves\`, \`totalInteractions\`, \`engagementRate\`, \`rawJson\`)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -71,7 +71,7 @@ export async function listForMediaSet(
   if (mediaIds.length === 0) return [];
   const placeholders = mediaIds.map(() => "?").join(",");
   const rows = await query<Raw>(
-    `SELECT ${COLS} FROM \`MediaMetricSnapshot\`
+    `SELECT ${COLS} FROM \`mediametricsnapshot\`
        WHERE \`instagramMediaId\` IN (${placeholders})
        ORDER BY \`collectedAt\` DESC LIMIT ${Number(limit) | 0}`,
     mediaIds,
@@ -81,7 +81,7 @@ export async function listForMediaSet(
 
 export async function listRecent(limit = 12): Promise<SnapshotRow[]> {
   const rows = await query<Raw>(
-    `SELECT ${COLS} FROM \`MediaMetricSnapshot\` ORDER BY \`collectedAt\` DESC LIMIT ${Number(limit) | 0}`,
+    `SELECT ${COLS} FROM \`mediametricsnapshot\` ORDER BY \`collectedAt\` DESC LIMIT ${Number(limit) | 0}`,
   );
   return rows.map(mapRow);
 }
@@ -91,8 +91,8 @@ export async function listForSocialAccount(
   limit = 20,
 ): Promise<SnapshotRow[]> {
   const rows = await query<Raw>(
-    `SELECT ${COLS} FROM \`MediaMetricSnapshot\`
-       WHERE \`instagramMediaId\` IN (SELECT \`id\` FROM \`InstagramMedia\` WHERE \`socialAccountId\` = ?)
+    `SELECT ${COLS} FROM \`mediametricsnapshot\`
+       WHERE \`instagramMediaId\` IN (SELECT \`id\` FROM \`instagrammedia\` WHERE \`socialAccountId\` = ?)
        ORDER BY \`collectedAt\` DESC LIMIT ${Number(limit) | 0}`,
     [socialAccountId],
   );

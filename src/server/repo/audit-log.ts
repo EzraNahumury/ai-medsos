@@ -23,7 +23,7 @@ export type CreateAuditInput = {
 
 export async function createAudit(input: CreateAuditInput): Promise<void> {
   await execute(
-    "INSERT INTO `AuditLog` (`actor`, `action`, `entityType`, `entityId`, `status`, `message`, `metadataJson`) " +
+    "INSERT INTO `auditlog` (`actor`, `action`, `entityType`, `entityId`, `status`, `message`, `metadataJson`) " +
       "VALUES (?, ?, ?, ?, ?, ?, ?)",
     [
       input.actor,
@@ -49,7 +49,7 @@ export async function listRecent(limit = 15): Promise<AuditLogRow[]> {
     createdAt: unknown;
   }>(
     "SELECT `id`, `actor`, `action`, `entityType`, `entityId`, `status`, `message`, `createdAt` " +
-      "FROM `AuditLog` ORDER BY `createdAt` DESC LIMIT " +
+      "FROM `auditlog` ORDER BY `createdAt` DESC LIMIT " +
       (Number(limit) | 0),
   );
   return rows.map((r) => ({ ...r, createdAt: toDate(r.createdAt) ?? new Date(0) }));

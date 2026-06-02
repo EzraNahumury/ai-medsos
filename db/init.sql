@@ -8,7 +8,7 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ----- AdminSession -----
-CREATE TABLE IF NOT EXISTS `AdminSession` (
+CREATE TABLE IF NOT EXISTS `adminsession` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `sessionToken` VARCHAR(255) NOT NULL,
   `email` VARCHAR(255) NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `AdminSession` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----- OAuthState -----
-CREATE TABLE IF NOT EXISTS `OAuthState` (
+CREATE TABLE IF NOT EXISTS `oauthstate` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `state` VARCHAR(255) NOT NULL,
   `brandName` VARCHAR(64) NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `OAuthState` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----- SocialAccount -----
-CREATE TABLE IF NOT EXISTS `SocialAccount` (
+CREATE TABLE IF NOT EXISTS `socialaccount` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `brandName` VARCHAR(64) NOT NULL,
   `platform` VARCHAR(32) NOT NULL DEFAULT 'INSTAGRAM',
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS `SocialAccount` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----- InstagramMedia -----
-CREATE TABLE IF NOT EXISTS `InstagramMedia` (
+CREATE TABLE IF NOT EXISTS `instagrammedia` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `socialAccountId` INT NOT NULL,
   `igMediaId` VARCHAR(64) NOT NULL,
@@ -86,11 +86,11 @@ CREATE TABLE IF NOT EXISTS `InstagramMedia` (
   KEY `idx_InstagramMedia_socialAccountId` (`socialAccountId`),
   KEY `idx_InstagramMedia_timestamp` (`timestamp`),
   CONSTRAINT `fk_InstagramMedia_socialAccount`
-    FOREIGN KEY (`socialAccountId`) REFERENCES `SocialAccount`(`id`) ON DELETE CASCADE
+    FOREIGN KEY (`socialAccountId`) REFERENCES `socialaccount`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----- MediaMetricSnapshot -----
-CREATE TABLE IF NOT EXISTS `MediaMetricSnapshot` (
+CREATE TABLE IF NOT EXISTS `mediametricsnapshot` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `instagramMediaId` INT NOT NULL,
   `views` INT NULL,
@@ -109,11 +109,11 @@ CREATE TABLE IF NOT EXISTS `MediaMetricSnapshot` (
   KEY `idx_MediaMetricSnapshot_instagramMediaId` (`instagramMediaId`),
   KEY `idx_MediaMetricSnapshot_collectedAt` (`collectedAt`),
   CONSTRAINT `fk_MediaMetricSnapshot_instagramMedia`
-    FOREIGN KEY (`instagramMediaId`) REFERENCES `InstagramMedia`(`id`) ON DELETE CASCADE
+    FOREIGN KEY (`instagramMediaId`) REFERENCES `instagrammedia`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----- InstagramComment -----
-CREATE TABLE IF NOT EXISTS `InstagramComment` (
+CREATE TABLE IF NOT EXISTS `instagramcomment` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `socialAccountId` INT NULL,
   `instagramMediaId` INT NULL,
@@ -137,13 +137,13 @@ CREATE TABLE IF NOT EXISTS `InstagramComment` (
   KEY `idx_InstagramComment_timestamp` (`timestamp`),
   KEY `idx_InstagramComment_sentiment` (`sentiment`),
   CONSTRAINT `fk_InstagramComment_socialAccount`
-    FOREIGN KEY (`socialAccountId`) REFERENCES `SocialAccount`(`id`) ON DELETE SET NULL,
+    FOREIGN KEY (`socialAccountId`) REFERENCES `socialaccount`(`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_InstagramComment_instagramMedia`
-    FOREIGN KEY (`instagramMediaId`) REFERENCES `InstagramMedia`(`id`) ON DELETE SET NULL
+    FOREIGN KEY (`instagramMediaId`) REFERENCES `instagrammedia`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----- IgWebhookEvent -----
-CREATE TABLE IF NOT EXISTS `IgWebhookEvent` (
+CREATE TABLE IF NOT EXISTS `igwebhookevent` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `eventId` VARCHAR(255) NULL,
   `objectType` VARCHAR(64) NULL,
@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS `IgWebhookEvent` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----- SyncJob -----
-CREATE TABLE IF NOT EXISTS `SyncJob` (
+CREATE TABLE IF NOT EXISTS `syncjob` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `jobType` VARCHAR(64) NOT NULL,
   `socialAccountId` INT NULL,
@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS `SyncJob` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----- AuditLog -----
-CREATE TABLE IF NOT EXISTS `AuditLog` (
+CREATE TABLE IF NOT EXISTS `auditlog` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `actor` VARCHAR(64) NOT NULL,
   `action` VARCHAR(128) NOT NULL,
@@ -192,7 +192,7 @@ CREATE TABLE IF NOT EXISTS `AuditLog` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----- AiAgentConversation -----
-CREATE TABLE IF NOT EXISTS `AiAgentConversation` (
+CREATE TABLE IF NOT EXISTS `aiagentconversation` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(255) NOT NULL,
   `createdByEmail` VARCHAR(255) NULL,
@@ -205,7 +205,7 @@ CREATE TABLE IF NOT EXISTS `AiAgentConversation` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----- AiAgentMessage -----
-CREATE TABLE IF NOT EXISTS `AiAgentMessage` (
+CREATE TABLE IF NOT EXISTS `aiagentmessage` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `conversationId` INT NOT NULL,
   `role` VARCHAR(16) NOT NULL,
@@ -216,5 +216,5 @@ CREATE TABLE IF NOT EXISTS `AiAgentMessage` (
   PRIMARY KEY (`id`),
   KEY `idx_AiAgentMessage_conversationId_createdAt` (`conversationId`, `createdAt`),
   CONSTRAINT `fk_AiAgentMessage_conversation`
-    FOREIGN KEY (`conversationId`) REFERENCES `AiAgentConversation`(`id`) ON DELETE CASCADE
+    FOREIGN KEY (`conversationId`) REFERENCES `aiagentconversation`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

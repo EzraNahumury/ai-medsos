@@ -51,7 +51,7 @@ export type CreateEventInput = {
 
 export async function createEvent(input: CreateEventInput): Promise<number> {
   const r = await execute(
-    "INSERT INTO `IgWebhookEvent` (`eventId`, `objectType`, `fieldName`, `rawPayload`, `rawBody`, `processingStatus`, `errorMessage`, `processedAt`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO `igwebhookevent` (`eventId`, `objectType`, `fieldName`, `rawPayload`, `rawBody`, `processingStatus`, `errorMessage`, `processedAt`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
     [
       input.eventId ?? null,
       input.objectType ?? null,
@@ -68,7 +68,7 @@ export async function createEvent(input: CreateEventInput): Promise<number> {
 
 export async function findById(id: number): Promise<WebhookEventRow | null> {
   const row = await queryOne<Raw>(
-    `SELECT ${COLS} FROM \`IgWebhookEvent\` WHERE \`id\` = ?`,
+    `SELECT ${COLS} FROM \`igwebhookevent\` WHERE \`id\` = ?`,
     [id],
   );
   return row ? mapRow(row) : null;
@@ -76,7 +76,7 @@ export async function findById(id: number): Promise<WebhookEventRow | null> {
 
 export async function listPending(limit = 20): Promise<WebhookEventRow[]> {
   const rows = await query<Raw>(
-    `SELECT ${COLS} FROM \`IgWebhookEvent\` WHERE \`processingStatus\` = 'PENDING' ORDER BY \`receivedAt\` ASC LIMIT ${Number(limit) | 0}`,
+    `SELECT ${COLS} FROM \`igwebhookevent\` WHERE \`processingStatus\` = 'PENDING' ORDER BY \`receivedAt\` ASC LIMIT ${Number(limit) | 0}`,
   );
   return rows.map(mapRow);
 }
@@ -104,7 +104,7 @@ export async function listRecent(limit = 10): Promise<
     processedAt: unknown;
   }>(
     "SELECT `id`, `eventId`, `objectType`, `fieldName`, `processingStatus`, `errorMessage`, `receivedAt`, `processedAt` " +
-      "FROM `IgWebhookEvent` ORDER BY `receivedAt` DESC LIMIT " +
+      "FROM `igwebhookevent` ORDER BY `receivedAt` DESC LIMIT " +
       (Number(limit) | 0),
   );
   return rows.map((r) => ({
@@ -116,7 +116,7 @@ export async function listRecent(limit = 10): Promise<
 
 export async function countPending(): Promise<number> {
   const row = await queryOne<{ c: number }>(
-    "SELECT COUNT(*) AS c FROM `IgWebhookEvent` WHERE `processingStatus` = 'PENDING'",
+    "SELECT COUNT(*) AS c FROM `igwebhookevent` WHERE `processingStatus` = 'PENDING'",
   );
   return row?.c ?? 0;
 }
@@ -132,7 +132,7 @@ export async function updateStatus(
   },
 ): Promise<void> {
   await execute(
-    "UPDATE `IgWebhookEvent` SET `processingStatus` = ?, `errorMessage` = ?, `processedAt` = ?, " +
+    "UPDATE `igwebhookevent` SET `processingStatus` = ?, `errorMessage` = ?, `processedAt` = ?, " +
       "`objectType` = COALESCE(?, `objectType`), `fieldName` = COALESCE(?, `fieldName`) " +
       "WHERE `id` = ?",
     [

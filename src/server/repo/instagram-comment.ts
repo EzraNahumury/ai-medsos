@@ -35,7 +35,7 @@ export async function upsertByIgCommentId(
   input: UpsertCommentInput,
 ): Promise<void> {
   await execute(
-    `INSERT INTO \`InstagramComment\`
+    `INSERT INTO \`instagramcomment\`
        (\`socialAccountId\`, \`instagramMediaId\`, \`igCommentId\`, \`parentCommentId\`, \`username\`, \`text\`,
         \`likeCount\`, \`timestamp\`, \`rawJson\`)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -90,7 +90,7 @@ export async function listBySocialAccount(
     intent: string;
   }>(
     "SELECT `id`, `igCommentId`, `username`, `text`, `timestamp`, `likeCount`, `instagramMediaId`, `sentiment`, `intent` " +
-      "FROM `InstagramComment` WHERE `socialAccountId` = ? ORDER BY `timestamp` DESC LIMIT " +
+      "FROM `instagramcomment` WHERE `socialAccountId` = ? ORDER BY `timestamp` DESC LIMIT " +
       (Number(limit) | 0),
     [socialAccountId],
   );
@@ -123,7 +123,7 @@ export async function listRecentForDashboard(limit = 15): Promise<
   }>(
     "SELECT c.`id`, c.`igCommentId`, c.`username`, c.`text`, c.`timestamp`, c.`likeCount`, " +
       "c.`instagramMediaId`, c.`socialAccountId`, s.`brandName` AS saBrand " +
-      "FROM `InstagramComment` c LEFT JOIN `SocialAccount` s ON s.`id` = c.`socialAccountId` " +
+      "FROM `instagramcomment` c LEFT JOIN `socialaccount` s ON s.`id` = c.`socialAccountId` " +
       "ORDER BY c.`createdAt` DESC LIMIT " +
       (Number(limit) | 0),
   );
@@ -187,9 +187,9 @@ export async function listAllForDashboard(
             c.\`sentiment\`, c.\`intent\`, c.\`needsHumanReview\`, c.\`instagramMediaId\`, c.\`socialAccountId\`,
             s.\`brandName\` AS saBrand, s.\`username\` AS saUser,
             m.\`igMediaId\` AS mIgMediaId, m.\`permalink\` AS mPermalink, m.\`mediaType\` AS mType
-       FROM \`InstagramComment\` c
-       LEFT JOIN \`SocialAccount\` s ON s.\`id\` = c.\`socialAccountId\`
-       LEFT JOIN \`InstagramMedia\` m ON m.\`id\` = c.\`instagramMediaId\`
+       FROM \`instagramcomment\` c
+       LEFT JOIN \`socialaccount\` s ON s.\`id\` = c.\`socialAccountId\`
+       LEFT JOIN \`instagrammedia\` m ON m.\`id\` = c.\`instagramMediaId\`
        ${where}
       ORDER BY c.\`timestamp\` DESC
       LIMIT ${Number(limit) | 0}`,
@@ -217,7 +217,7 @@ export async function listAllForDashboard(
 
 export async function count(): Promise<number> {
   const row = await queryOne<{ c: number }>(
-    "SELECT COUNT(*) AS c FROM `InstagramComment`",
+    "SELECT COUNT(*) AS c FROM `instagramcomment`",
   );
   return row?.c ?? 0;
 }
@@ -226,7 +226,7 @@ export async function count(): Promise<number> {
 export async function countByBrand(): Promise<Record<string, number>> {
   const rows = await query<{ brand: string; c: number }>(
     "SELECT s.`brandName` AS brand, COUNT(*) AS c " +
-      "FROM `InstagramComment` c LEFT JOIN `SocialAccount` s ON s.`id` = c.`socialAccountId` " +
+      "FROM `instagramcomment` c LEFT JOIN `socialaccount` s ON s.`id` = c.`socialAccountId` " +
       "WHERE s.`brandName` IS NOT NULL " +
       "GROUP BY s.`brandName`",
   );

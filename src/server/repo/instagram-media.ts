@@ -72,7 +72,7 @@ export async function upsertByIgMediaId(
   input: UpsertMediaInput,
 ): Promise<{ id: number }> {
   await execute(
-    `INSERT INTO \`InstagramMedia\`
+    `INSERT INTO \`instagrammedia\`
        (\`socialAccountId\`, \`igMediaId\`, \`mediaType\`, \`mediaProductType\`, \`caption\`, \`permalink\`,
         \`mediaUrl\`, \`thumbnailUrl\`, \`timestamp\`, \`username\`, \`likeCount\`, \`commentsCount\`, \`rawJson\`)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -106,7 +106,7 @@ export async function upsertByIgMediaId(
     ],
   );
   const row = await queryOne<{ id: number }>(
-    "SELECT `id` FROM `InstagramMedia` WHERE `igMediaId` = ?",
+    "SELECT `id` FROM `instagrammedia` WHERE `igMediaId` = ?",
     [input.igMediaId],
   );
   if (!row) throw new Error("upsertByIgMediaId: row not found");
@@ -117,7 +117,7 @@ export async function findByIgMediaId(
   igMediaId: string,
 ): Promise<InstagramMediaRow | null> {
   const row = await queryOne<Raw>(
-    `SELECT ${COLS} FROM \`InstagramMedia\` WHERE \`igMediaId\` = ?`,
+    `SELECT ${COLS} FROM \`instagrammedia\` WHERE \`igMediaId\` = ?`,
     [igMediaId],
   );
   return row ? mapRow(row) : null;
@@ -128,7 +128,7 @@ export async function listBySocialAccount(
   limit = 50,
 ): Promise<InstagramMediaRow[]> {
   const rows = await query<Raw>(
-    `SELECT ${COLS} FROM \`InstagramMedia\` WHERE \`socialAccountId\` = ? ORDER BY \`timestamp\` DESC LIMIT ${Number(limit) | 0}`,
+    `SELECT ${COLS} FROM \`instagrammedia\` WHERE \`socialAccountId\` = ? ORDER BY \`timestamp\` DESC LIMIT ${Number(limit) | 0}`,
     [socialAccountId],
   );
   return rows.map(mapRow);
@@ -167,8 +167,8 @@ export async function listRecentByCreatedAt(limit = 12): Promise<
     `SELECT m.\`id\`, m.\`igMediaId\`, m.\`mediaType\`, m.\`caption\`, m.\`permalink\`, m.\`thumbnailUrl\`,
             m.\`timestamp\`, m.\`likeCount\`, m.\`commentsCount\`, m.\`socialAccountId\`,
             s.\`brandName\` AS saBrand, s.\`username\` AS saUser
-       FROM \`InstagramMedia\` m
-       LEFT JOIN \`SocialAccount\` s ON s.\`id\` = m.\`socialAccountId\`
+       FROM \`instagrammedia\` m
+       LEFT JOIN \`socialaccount\` s ON s.\`id\` = m.\`socialAccountId\`
       ORDER BY m.\`createdAt\` DESC
       LIMIT ${Number(limit) | 0}`,
   );
@@ -232,8 +232,8 @@ export async function listAllForDashboard(
     `SELECT m.\`id\`, m.\`igMediaId\`, m.\`mediaType\`, m.\`mediaProductType\`, m.\`caption\`, m.\`permalink\`,
             m.\`thumbnailUrl\`, m.\`mediaUrl\`, m.\`timestamp\`, m.\`username\`, m.\`likeCount\`, m.\`commentsCount\`,
             m.\`socialAccountId\`, s.\`brandName\` AS saBrand, s.\`username\` AS saUser
-       FROM \`InstagramMedia\` m
-       LEFT JOIN \`SocialAccount\` s ON s.\`id\` = m.\`socialAccountId\`
+       FROM \`instagrammedia\` m
+       LEFT JOIN \`socialaccount\` s ON s.\`id\` = m.\`socialAccountId\`
        ${where}
       ORDER BY m.\`timestamp\` DESC
       LIMIT ${Number(limit) | 0}`,
@@ -260,7 +260,7 @@ export async function listAllForDashboard(
 
 export async function count(): Promise<number> {
   const row = await queryOne<{ c: number }>(
-    "SELECT COUNT(*) AS c FROM `InstagramMedia`",
+    "SELECT COUNT(*) AS c FROM `instagrammedia`",
   );
   return row?.c ?? 0;
 }
@@ -269,7 +269,7 @@ export async function count(): Promise<number> {
 export async function countByBrand(): Promise<Record<string, number>> {
   const rows = await query<{ brand: string; c: number }>(
     "SELECT s.`brandName` AS brand, COUNT(*) AS c " +
-      "FROM `InstagramMedia` m LEFT JOIN `SocialAccount` s ON s.`id` = m.`socialAccountId` " +
+      "FROM `instagrammedia` m LEFT JOIN `socialaccount` s ON s.`id` = m.`socialAccountId` " +
       "WHERE s.`brandName` IS NOT NULL " +
       "GROUP BY s.`brandName`",
   );

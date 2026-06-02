@@ -102,7 +102,7 @@ export async function createConversation(input: {
   createdByEmail?: string | null;
 }): Promise<AiAgentConversationRow> {
   const result = await execute(
-    "INSERT INTO `AiAgentConversation` (`title`, `createdByEmail`) VALUES (?, ?)",
+    "INSERT INTO `aiagentconversation` (`title`, `createdByEmail`) VALUES (?, ?)",
     [input.title, input.createdByEmail ?? null],
   );
   const row = await findConversationById(result.insertId);
@@ -114,7 +114,7 @@ export async function findConversationById(
   id: number,
 ): Promise<AiAgentConversationRow | null> {
   const row = await queryOne<ConversationRaw>(
-    `SELECT ${CONVERSATION_COLS} FROM \`AiAgentConversation\` WHERE \`id\` = ? AND \`deletedAt\` IS NULL`,
+    `SELECT ${CONVERSATION_COLS} FROM \`aiagentconversation\` WHERE \`id\` = ? AND \`deletedAt\` IS NULL`,
     [id],
   );
   return row ? mapConversation(row) : null;
@@ -127,8 +127,8 @@ export async function listConversations(
     `SELECT c.\`id\`, c.\`title\`, c.\`createdByEmail\`, c.\`createdAt\`, c.\`updatedAt\`, c.\`deletedAt\`,
             MAX(m.\`createdAt\`) AS lastMessageAt,
             COUNT(m.\`id\`) AS messageCount
-       FROM \`AiAgentConversation\` c
-       LEFT JOIN \`AiAgentMessage\` m ON m.\`conversationId\` = c.\`id\`
+       FROM \`aiagentconversation\` c
+       LEFT JOIN \`aiagentmessage\` m ON m.\`conversationId\` = c.\`id\`
       WHERE c.\`deletedAt\` IS NULL
       GROUP BY c.\`id\`, c.\`title\`, c.\`createdByEmail\`, c.\`createdAt\`, c.\`updatedAt\`, c.\`deletedAt\`
       ORDER BY COALESCE(MAX(m.\`createdAt\`), c.\`updatedAt\`) DESC
@@ -139,7 +139,7 @@ export async function listConversations(
 
 export async function softDeleteConversation(id: number): Promise<void> {
   await execute(
-    "UPDATE `AiAgentConversation` SET `deletedAt` = NOW() WHERE `id` = ?",
+    "UPDATE `aiagentconversation` SET `deletedAt` = NOW() WHERE `id` = ?",
     [id],
   );
 }
@@ -152,7 +152,7 @@ export async function createMessage(input: {
   metadata?: unknown;
 }): Promise<AiAgentMessageRow> {
   const result = await execute(
-    "INSERT INTO `AiAgentMessage` (`conversationId`, `role`, `content`, `model`, `metadataJson`) VALUES (?, ?, ?, ?, ?)",
+    "INSERT INTO `aiagentmessage` (`conversationId`, `role`, `content`, `model`, `metadataJson`) VALUES (?, ?, ?, ?, ?)",
     [
       input.conversationId,
       input.role,
@@ -162,11 +162,11 @@ export async function createMessage(input: {
     ],
   );
   await execute(
-    "UPDATE `AiAgentConversation` SET `updatedAt` = NOW() WHERE `id` = ?",
+    "UPDATE `aiagentconversation` SET `updatedAt` = NOW() WHERE `id` = ?",
     [input.conversationId],
   );
   const row = await queryOne<MessageRaw>(
-    "SELECT `id`, `conversationId`, `role`, `content`, `model`, `metadataJson`, `createdAt` FROM `AiAgentMessage` WHERE `id` = ?",
+    "SELECT `id`, `conversationId`, `role`, `content`, `model`, `metadataJson`, `createdAt` FROM `aiagentmessage` WHERE `id` = ?",
     [result.insertId],
   );
   if (!row) throw new Error("createMessage: row not found after insert");
@@ -180,7 +180,7 @@ export async function listMessages(
   const rows = await query<MessageRaw>(
     `SELECT * FROM (
        SELECT \`id\`, \`conversationId\`, \`role\`, \`content\`, \`model\`, \`metadataJson\`, \`createdAt\`
-         FROM \`AiAgentMessage\`
+         FROM \`aiagentmessage\`
         WHERE \`conversationId\` = ?
         ORDER BY \`createdAt\` DESC, \`id\` DESC
         LIMIT ${Number(limit) | 0}

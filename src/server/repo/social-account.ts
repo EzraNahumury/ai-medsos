@@ -85,7 +85,7 @@ function mapRow(r: Raw): SocialAccountRow {
 
 export async function findById(id: number): Promise<SocialAccountRow | null> {
   const row = await queryOne<Raw>(
-    `SELECT ${SELECT_COLS} FROM \`SocialAccount\` WHERE \`id\` = ?`,
+    `SELECT ${SELECT_COLS} FROM \`socialaccount\` WHERE \`id\` = ?`,
     [id],
   );
   return row ? mapRow(row) : null;
@@ -95,7 +95,7 @@ export async function findByIgUserId(
   igUserId: string,
 ): Promise<SocialAccountRow | null> {
   const row = await queryOne<Raw>(
-    `SELECT ${SELECT_COLS} FROM \`SocialAccount\` WHERE \`igUserId\` = ?`,
+    `SELECT ${SELECT_COLS} FROM \`socialaccount\` WHERE \`igUserId\` = ?`,
     [igUserId],
   );
   return row ? mapRow(row) : null;
@@ -103,21 +103,21 @@ export async function findByIgUserId(
 
 export async function listAll(): Promise<SocialAccountRow[]> {
   const rows = await query<Raw>(
-    `SELECT ${SELECT_COLS} FROM \`SocialAccount\` ORDER BY \`brandName\` ASC, \`id\` ASC`,
+    `SELECT ${SELECT_COLS} FROM \`socialaccount\` ORDER BY \`brandName\` ASC, \`id\` ASC`,
   );
   return rows.map(mapRow);
 }
 
 export async function findFirstActive(): Promise<SocialAccountRow | null> {
   const row = await queryOne<Raw>(
-    `SELECT ${SELECT_COLS} FROM \`SocialAccount\` WHERE \`tokenStatus\` = 'ACTIVE' ORDER BY \`id\` ASC LIMIT 1`,
+    `SELECT ${SELECT_COLS} FROM \`socialaccount\` WHERE \`tokenStatus\` = 'ACTIVE' ORDER BY \`id\` ASC LIMIT 1`,
   );
   return row ? mapRow(row) : null;
 }
 
 export async function count(): Promise<number> {
   const row = await queryOne<{ c: number }>(
-    "SELECT COUNT(*) AS c FROM `SocialAccount`",
+    "SELECT COUNT(*) AS c FROM `socialaccount`",
   );
   return row?.c ?? 0;
 }
@@ -143,7 +143,7 @@ export type UpsertInput = {
  */
 export async function upsertByIgUserId(input: UpsertInput): Promise<number> {
   await execute(
-    `INSERT INTO \`SocialAccount\`
+    `INSERT INTO \`socialaccount\`
        (\`brandName\`, \`platform\`, \`igUserId\`, \`pageId\`, \`pageName\`, \`username\`, \`name\`, \`profilePictureUrl\`,
         \`encryptedPageAccessToken\`, \`encryptedUserAccessToken\`, \`tokenExpiresAt\`, \`tokenStatus\`, \`scopes\`)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -177,7 +177,7 @@ export async function upsertByIgUserId(input: UpsertInput): Promise<number> {
     ],
   );
   const row = await queryOne<{ id: number }>(
-    "SELECT `id` FROM `SocialAccount` WHERE `igUserId` = ?",
+    "SELECT `id` FROM `socialaccount` WHERE `igUserId` = ?",
     [input.igUserId],
   );
   if (!row) throw new Error("upsertByIgUserId: row not found after upsert");
@@ -199,7 +199,7 @@ export async function updateProfileSync(
   patch: ProfileSyncPatch,
 ): Promise<void> {
   await execute(
-    `UPDATE \`SocialAccount\` SET
+    `UPDATE \`socialaccount\` SET
        \`username\` = COALESCE(?, \`username\`),
        \`name\` = COALESCE(?, \`name\`),
        \`profilePictureUrl\` = COALESCE(?, \`profilePictureUrl\`),
@@ -231,7 +231,7 @@ export async function touchLastSync(
     | "lastCommentSyncAt",
 ): Promise<void> {
   await execute(
-    `UPDATE \`SocialAccount\` SET \`${field}\` = NOW() WHERE \`id\` = ?`,
+    `UPDATE \`socialaccount\` SET \`${field}\` = NOW() WHERE \`id\` = ?`,
     [id],
   );
 }
@@ -241,7 +241,7 @@ export async function updateTokenStatus(
   status: string,
 ): Promise<void> {
   await execute(
-    "UPDATE `SocialAccount` SET `tokenStatus` = ? WHERE `id` = ?",
+    "UPDATE `socialaccount` SET `tokenStatus` = ? WHERE `id` = ?",
     [status, id],
   );
 }
@@ -283,7 +283,7 @@ export async function listForDashboard(): Promise<ListedAccount[]> {
   }>(
     "SELECT `id`, `brandName`, `username`, `igUserId`, `pageId`, `pageName`, `tokenStatus`, `tokenExpiresAt`, " +
       "`followersCount`, `mediaCount`, `lastProfileSyncAt`, `lastMediaSyncAt`, `lastInsightSyncAt`, `lastCommentSyncAt` " +
-      "FROM `SocialAccount` ORDER BY `brandName` ASC, `id` ASC",
+      "FROM `socialaccount` ORDER BY `brandName` ASC, `id` ASC",
   );
   return rows.map((r) => ({
     id: r.id,

@@ -35,21 +35,21 @@ export async function createState(input: {
   expiresAt: Date;
 }): Promise<void> {
   await execute(
-    "INSERT INTO `OAuthState` (`state`, `brandName`, `expiresAt`) VALUES (?, ?, ?)",
+    "INSERT INTO `oauthstate` (`state`, `brandName`, `expiresAt`) VALUES (?, ?, ?)",
     [input.state, input.brandName, input.expiresAt],
   );
 }
 
 export async function findByState(state: string): Promise<OAuthStateRow | null> {
   const row = await queryOne<Raw>(
-    "SELECT `id`, `state`, `brandName`, `expiresAt`, `usedAt`, `createdAt` FROM `OAuthState` WHERE `state` = ?",
+    "SELECT `id`, `state`, `brandName`, `expiresAt`, `usedAt`, `createdAt` FROM `oauthstate` WHERE `state` = ?",
     [state],
   );
   return row ? mapRow(row) : null;
 }
 
 export async function markStateUsed(state: string): Promise<void> {
-  await execute("UPDATE `OAuthState` SET `usedAt` = NOW() WHERE `state` = ?", [
+  await execute("UPDATE `oauthstate` SET `usedAt` = NOW() WHERE `state` = ?", [
     state,
   ]);
 }
