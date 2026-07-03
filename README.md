@@ -73,23 +73,23 @@ that same database to answer questions in plain language.
 
 ```mermaid
 flowchart TB
-    Browser["Browser\nLogin · Dashboard · AI Agent"]
+    Browser["Browser<br/>Login / Dashboard / AI Agent"]
 
     subgraph NextApp["Next.js App Router (Node.js runtime)"]
-        Pages["Pages\nsrc/app/dashboard/**"]
-        API["API routes\nsrc/app/api/**"]
-        ServerLib["Server modules\nsrc/server/instagram/*\nsrc/server/ai/*"]
-        Repo["Repo layer\nsrc/server/repo/*\n(raw SQL via mysql2)"]
+        Pages["Pages<br/>src/app/dashboard/**"]
+        API["API routes<br/>src/app/api/**"]
+        ServerLib["Server modules<br/>src/server/instagram/*<br/>src/server/ai/*"]
+        Repo["Repo layer<br/>src/server/repo/*<br/>raw SQL via mysql2"]
     end
 
     subgraph External["External services"]
-        IGAPI["Instagram Graph API\ngraph.instagram.com"]
-        IGOAuth["Instagram OAuth\ninstagram.com / api.instagram.com"]
+        IGAPI["Instagram Graph API<br/>graph.instagram.com"]
+        IGOAuth["Instagram OAuth<br/>instagram.com / api.instagram.com"]
         MetaSender["Meta webhook sender"]
-        Ollama["Ollama Cloud / local\n/api/chat"]
+        Ollama["Ollama Cloud / local<br/>/api/chat"]
     end
 
-    MySQL[("MySQL\n12 tables")]
+    MySQL[("MySQL<br/>12 tables")]
 
     Browser <--> Pages
     Browser <--> API
@@ -135,7 +135,8 @@ sequenceDiagram
     alt valid
         A->>A: random 32-byte token → HMAC-SHA256 sign with SESSION_SECRET
         A->>DB: INSERT adminsession(sessionToken, email, expiresAt = now+12h)
-        A-->>B: Set-Cookie igacc_session (httpOnly, sameSite=lax); 200
+        A-->>B: Set-Cookie igacc_session, httpOnly + sameSite=lax
+        A-->>B: 200 OK
         B->>L: navigate to /dashboard/*
         L->>DB: SELECT adminsession WHERE sessionToken = HMAC(cookie)
         DB-->>L: row found, not expired
@@ -307,7 +308,7 @@ sequenceDiagram
 
     Note over Meta,App: Every event, forever
     Meta->>App: POST body + header X-Hub-Signature-256: sha256=...
-    App->>App: verifyMetaSignature(rawBody, header, META_APP_SECRET)\nvia crypto.timingSafeEqual
+    App->>App: verifyMetaSignature(rawBody, header, META_APP_SECRET) via crypto.timingSafeEqual
     alt signature invalid
         App-->>Meta: 401
     else valid
@@ -319,7 +320,7 @@ sequenceDiagram
     Admin->>App: POST /api/webhook/process-pending
     App->>DB: SELECT igwebhookevent WHERE status=PENDING LIMIT 20
     loop each event
-        App->>App: extractPossibleIdsFromWebhook(payload)\n(defensive — Meta payload shapes vary)
+        App->>App: extractPossibleIdsFromWebhook(payload) - defensive, Meta payload shapes vary
         App->>DB: find socialaccount by extracted igUserId (fallback: first ACTIVE account)
         App->>IG: GET media / comment detail with that account's decrypted token
         App->>DB: UPSERT instagrammedia / instagramcomment
@@ -357,8 +358,8 @@ sequenceDiagram
     App->>DB: SELECT last 20 aiagentmessage for this conversation (history)
     App->>DB: INSERT aiagentmessage(role=user, content=message)
 
-    App->>DB: gather snapshot — listForDashboard(accounts), 30 recent media,\n30 recent comments, 20 metric snapshots, 15 sync jobs,\n15 webhook events, 20 audit log rows, plus total counts
-    App->>App: build system prompt = house rules + compact JSON snapshot\n(never mention tokens/secrets; no hallucinated numbers)
+    App->>DB: gather snapshot - accounts, 30 recent media, 30 recent comments, 20 metric snapshots, 15 sync jobs, 15 webhook events, 20 audit log rows, plus total counts
+    App->>App: build system prompt = house rules + compact JSON snapshot - never mention tokens or secrets, no hallucinated numbers
     App->>Ollama: POST /api/chat { model, messages: [system, ...history], stream:false }
     Ollama-->>App: { message: { content }, model }
     App->>DB: INSERT aiagentmessage(role=assistant, content, model, metadata)
